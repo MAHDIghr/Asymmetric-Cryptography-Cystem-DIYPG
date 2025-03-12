@@ -15,7 +15,6 @@
 // 	fait
 // renvoyer (r, u, v)
 
-/* test 2*/
 #include "rsa_common_header.h"
 #include "phase1.h"
 /// \brief
