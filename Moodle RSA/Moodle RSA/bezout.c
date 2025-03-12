@@ -14,6 +14,7 @@
 // 	 r' := rs - q*r', u' = us - q*u', v' = vs - q*v'
 // 	fait
 // renvoyer (r, u, v)
+//test3
 #include "rsa_common_header.h"
 #include "phase1.h"
 /// \brief
