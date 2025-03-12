@@ -1,4 +1,4 @@
-#include "../rsa_common_header.h"
+#include "rsa_common_header.h"
 // conversion 4 octets en un int
 uint32_t convert_4byte2int(uint8_t *b){
   // ordre little endian
