@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "phase1.h": "c",
+        "rsa_common_header.h": "c",
+        "sha256_utils.h": "c",
+        "assert.h": "c"
+    }
+}

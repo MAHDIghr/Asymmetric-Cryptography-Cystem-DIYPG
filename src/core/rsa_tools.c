@@ -3,8 +3,8 @@
 /// \date summer 2019 update 2025
 /// \brief calculs sur les nombres premiers, génération de clefs RSA
 
-#include "../rsa_common_header.h"
-#include "phase1.h"
+#include "../../include/rsa_common_header.h"
+#include "../../include/phase1.h"
 
 void erreur(char* msg){
   printf("*** %s ***\n",msg);
