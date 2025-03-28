@@ -1,5 +1,5 @@
 #include "../../include/phase1.h"
-#include "../../include/file_io.h"
+
 
 /*===========================================================================================
                 Phase 1.0 :                
@@ -26,7 +26,19 @@
    encrypting or decrypting each element, with the corresponding output message generated. 
 */
 
-//...
+void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pubKey) {
+   /// \brief Encrypt le tableau d'octets input de longueur length avec la clé publique pubKey et retourne le tableau encryptée output
+   for (uint64_t i = 0; i < length; i++) {
+       output[i] = (uint8_t) puissance_mod_n(input[i], pubKey->E, pubKey->N);
+   }
+}
+
+void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *privKey) {
+   /// \brief Decrypte le tableau d'octets input de longueur length avec la clé privée privKey et retourne le tableau encryptée output
+   for (uint64_t i = 0; i < length; i++) {
+       output[i] = (uint8_t) puissance_mod_n(input[i], privKey->E, privKey->N);
+   }
+}
 
 /*===========================================================================================
                 Phase 1.2 :                
