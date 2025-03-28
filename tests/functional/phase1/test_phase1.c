@@ -1,4 +1,7 @@
 #include "../../include/phase1.h"
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 void test_rsa(const uint8_t *input, uint64_t length, const char *test_name) {
     /// \brief Fonction générique de test du chiffrement et du déchiffrement
