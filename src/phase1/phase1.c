@@ -69,4 +69,33 @@ void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pri
    - Implement file-based conversions, where binary data in files is converted to Base64 and vice versa.
 */
 
-//...
+void base64_encode(const uint8_t *input, uint64_t length, char *output) {
+    int i, j;
+    for (i = 0, j = 0; i < length; i += 3) {
+        uint32_t octet = (input[i] << 16) | (i + 1 < length ? (input[i + 1] << 8) : 0) | (i + 2 < length ? input[i + 2] : 0);
+        output[j++] = base64_table[(octet >> 18) & 0x3F];
+        output[j++] = base64_table[(octet >> 12) & 0x3F];
+        output[j++] = (i + 1 < length) ? base64_table[(octet >> 6) & 0x3F] : '=';
+        output[j++] = (i + 2 < length) ? base64_table[octet & 0x3F] : '=';
+    }
+    output[j] = '\0';
+}
+
+void base64_decode(const char *input, uint8_t *output, uint64_t *out_length) {
+    int len = strlen(input);
+    int i, j;
+    uint32_t buffer = 0;
+    int buffer_length = 0;
+    *out_length = 0;
+    for (i = 0, j = 0; i < len; i++) {
+        if (input[i] == '=') break;
+        int value = strchr(base64_table, input[i]) - base64_table;
+        buffer = (buffer << 6) | value;
+        buffer_length += 6;
+        if (buffer_length >= 8) {
+            output[j++] = (buffer >> (buffer_length - 8)) & 0xFF;
+            buffer_length -= 8;
+        }
+    }
+    *out_length = j;
+}
