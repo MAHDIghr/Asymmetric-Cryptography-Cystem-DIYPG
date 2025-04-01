@@ -1,6 +1,5 @@
 #include "../../../include/phase1.h"
 #include "../../../include/rsa_common_header.h"
-#include "../../../include/rsa_tools.h"
 #include "../../../include/other_base64.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -166,14 +165,6 @@ void test_binary_key() {
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
-    // PHASE 1.0
-
-    test_premier();
-    test_pgcd();
-    test_genKeys();
-    // Test dépassement
-    test_overflow();
-    printf("Tous les tests de la Phase 1.0 ont réussi !\n");
 
     // PHASE 1.1
     test_rsa_single_byte();
