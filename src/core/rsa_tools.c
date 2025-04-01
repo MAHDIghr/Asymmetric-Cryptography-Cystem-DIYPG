@@ -217,7 +217,7 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
 
   uint64_t N = num1*num2;
   uint64_t M = (num1-1)*(num2-1); //indicatrice d'Euler
-  fprintf(logfp,"num1 = %llu num2 = %llu cpt1 = %d cpt2 = %d\n",num1,num2,cpt1,cpt2);
+  fprintf(stdout,"num1 = %llu num2 = %llu cpt1 = %d cpt2 = %d\n",num1,num2,cpt1,cpt2);
   uint64_t C = 2;
 
   // recherche d'un nombre premier avec M
@@ -228,8 +228,8 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
 
   int64_t U,V;
   bezoutRSA(C,M,&U,&V);
-  fprintf(logfp,"Retour de Bézout : U = %llu V = %llu C = %llu M = %llu\n",U,V,C,M);
-  fprintf(logfp,"Calcul : C*U + M*V = %llu, C*U + M*V mod M = %llu\n",C*U + M*V,(C*U + M*V)%M);
+  fprintf(stdout,"Retour de Bézout : U = %llu V = %llu C = %llu M = %llu\n",U,V,C,M);
+  fprintf(stdout,"Calcul : C*U + M*V = %llu, C*U + M*V mod M = %llu\n",C*U + M*V,(C*U + M*V)%M);
 
   assert(2<U && U<M);
 
