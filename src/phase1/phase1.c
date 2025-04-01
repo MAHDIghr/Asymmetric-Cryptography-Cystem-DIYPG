@@ -69,33 +69,48 @@ void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pri
    - Implement file-based conversions, where binary data in files is converted to Base64 and vice versa.
 */
 
-void base64_encode(const uint8_t *input, uint64_t length, char *output) {
-    int i, j;
-    for (i = 0, j = 0; i < length; i += 3) {
-        uint32_t octet = (input[i] << 16) | (i + 1 < length ? (input[i + 1] << 8) : 0) | (i + 2 < length ? input[i + 2] : 0);
-        output[j++] = base64_table[(octet >> 18) & 0x3F];
-        output[j++] = base64_table[(octet >> 12) & 0x3F];
-        output[j++] = (i + 1 < length) ? base64_table[(octet >> 6) & 0x3F] : '=';
-        output[j++] = (i + 2 < length) ? base64_table[octet & 0x3F] : '=';
-    }
-    output[j] = '\0';
+int convert_binary_to_base64(const char *input_filename, const char *output_filename) {
+   /// \brief Fonction pour convertir un fichier binaire en base64
+   size_t input_length;
+   uint8_t *binary_data = read_message(input_filename);
+   if (binary_data == NULL) {
+      printf("Erreur lors de la lecture du input.\n");
+       return -1;
+   }
+
+   size_t output_length;
+   char *base64_data = base64_encode(binary_data, input_length, &output_length);
+   free(binary_data);
+
+   if (base64_data == NULL) {
+      printf("Erreur lors de la conversion en base 64.\n");
+       return -1;
+   }
+
+   int result = write_message(output_filename, (uint8_t *)base64_data);
+   free(base64_data);
+   return result;
 }
 
-void base64_decode(const char *input, uint8_t *output, uint64_t *out_length) {
-    int len = strlen(input);
-    int i, j;
-    uint32_t buffer = 0;
-    int buffer_length = 0;
-    *out_length = 0;
-    for (i = 0, j = 0; i < len; i++) {
-        if (input[i] == '=') break;
-        int value = strchr(base64_table, input[i]) - base64_table;
-        buffer = (buffer << 6) | value;
-        buffer_length += 6;
-        if (buffer_length >= 8) {
-            output[j++] = (buffer >> (buffer_length - 8)) & 0xFF;
-            buffer_length -= 8;
-        }
-    }
-    *out_length = j;
+int convert_base64_to_binary(const char *input_file, const char *output_file) {
+   /// \brief Fonction pour convertir un fichier base64 input_file en fichier binaire dans output_file
+   size_t input_length;
+   uint8_t *base64_data = read_message(input_file);
+   if (base64_data == NULL) {
+      printf("Erreur lors de la lecture du input.\n");
+       return -1;
+   }
+
+   size_t output_length;
+   uint8_t *binary_data = base64_decode((char *)base64_data, input_length, &output_length);
+   free(base64_data);
+
+   if (binary_data == NULL) {
+      printf("Erreur lors de la conversion en binaire.\n");
+       return -1;
+   }
+
+   int result = write_message(output_file, binary_data);
+   free(binary_data);
+   return result;
 }
