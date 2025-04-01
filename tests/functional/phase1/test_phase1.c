@@ -1,7 +1,7 @@
-#include "../../include/phase1.h"
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include "../../../include/phase1.h"
+#include "../../../include/rsa_common_header.h"
+#include "../../../include/rsa_tools.h"
+#include <stdint.h>
 
 void test_rsa(const uint8_t *input, uint64_t length, const char *test_name) {
     /// \brief Fonction générique de test du chiffrement et du déchiffrement
@@ -24,7 +24,7 @@ void test_rsa_encrypt_decrypt() {
 }
 
 void test_rsa_special_characters() {
-    uint8_t input[] = "!@#$%^&*()";
+    uint8_t input[] = "!@#$^&*()";
     test_rsa(input, strlen((char *)input), "Test des caractères spéciaux");
 }
 
@@ -62,7 +62,9 @@ void test_base64_file_conversion() {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
     test_rsa_encrypt_decrypt();
     test_rsa_special_characters();
     test_rsa_binary_data();

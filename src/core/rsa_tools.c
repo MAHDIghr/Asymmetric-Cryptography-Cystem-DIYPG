@@ -4,6 +4,15 @@
 /// \brief calculs sur les nombres premiers, génération de clefs RSA
 
 #include "../../include/rsa_common_header.h"
+#include "../../include/rsa_tools.h"
+#include "bezout.h"
+
+
+FILE *logfp = NULL;  // Initially NULL, set it later in main or a function
+
+void initialize_logging() {
+    logfp = stdout;  // Now we can assign stdout at runtime
+}
 
 void erreur(char* msg){
   printf("*** %s ***\n",msg);
@@ -199,7 +208,7 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
   /// \brief génère une paire de "grandes" clefs, adaptées au cryptage RSA par bloc
   /// \param[out] pubKey : clef publique
   /// \param[out] privKey : clef privée
-printf(">>>Max=%llu\n",max_prime);
+  printf(">>>Max=%llu\n",max_prime);
   int cpt1,cpt2;
   uint64_t num1 = genereUintRabin(max_prime,&cpt1);
   uint64_t num2 = genereUintRabin(max_prime,&cpt2);

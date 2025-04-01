@@ -1,5 +1,7 @@
 #include "../../include/phase1.h"
 #include "../../include/rsa_common_header.h"
+#include "../../include/rsa_tools.h"
+#include <stdint.h>
 
 
 /*===========================================================================================
