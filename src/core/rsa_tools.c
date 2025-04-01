@@ -4,7 +4,6 @@
 /// \brief calculs sur les nombres premiers, génération de clefs RSA
 
 #include "../../include/rsa_common_header.h"
-#include "../../include/phase1.h"
 
 void erreur(char* msg){
   printf("*** %s ***\n",msg);
