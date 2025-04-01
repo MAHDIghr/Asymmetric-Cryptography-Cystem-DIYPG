@@ -1,6 +1,6 @@
 # Compiler and flags
 CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c11 -g -Iinclude -mconsole
+CFLAGS  = -Wall -Wextra -std=c11 -g -Iinclude
 
 # Directories and source files
 SRC_CORE    = $(wildcard src/core/*.c)
@@ -28,7 +28,7 @@ all: $(BIN_DIR) $(BIN_DIR)/main \
 
 # Create bin directory if it doesn't exist
 $(BIN_DIR):
-	if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	mkdir -p $(BIN_DIR)
 
 # Main executable
 $(BIN_DIR)/main: $(MAIN_SRC) $(COMMON_SRCS)
@@ -54,6 +54,6 @@ $(BIN_DIR)/test_unit_phase1_phase1: $(TEST_UNIT_PHASE1_PHASE1) $(COMMON_SRCS)
 
 # Clean target
 clean:
-	rmdir /S /Q $(BIN_DIR)
+	rm -rf $(BIN_DIR)
 
 .PHONY: all clean
