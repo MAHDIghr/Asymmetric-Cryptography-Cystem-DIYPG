@@ -1,6 +1,8 @@
 #include "../../include/phase1.h"
 #include "../../include/rsa_common_header.h"
 #include "../../include/rsa_tools.h"
+#include "../../include/other_base64.h"
+#include "../../include/file_io.h"
 #include <stdint.h>
 
 
@@ -33,7 +35,7 @@ void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pub
    /// \brief Encrypt le tableau d'octets input de longueur length avec la clé publique pubKey et retourne le tableau encryptée output
    for (uint64_t i = 0; i < length; i++) {
        output[i] = (uint8_t) puissance_mod_n(input[i], pubKey->E, pubKey->N);
-       printf("Chiffrement: input[%llu] = 0x%02x, output[%llu] = 0x%02x\n", i, input[i], i, output[i]);
+       printf("Chiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
    }
 }
 
@@ -41,7 +43,7 @@ void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pri
    /// \brief Decrypte le tableau d'octets input de longueur length avec la clé privée privKey et retourne le tableau décrypté output
    for (uint64_t i = 0; i < length; i++) {
        output[i] = (uint8_t) puissance_mod_n(input[i], privKey->E, privKey->N);
-       printf("Déchiffrement: input[%llu] = 0x%02x, output[%llu] = 0x%02x\n", i, input[i], i, output[i]);
+       printf("Déchiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
    }
 }
 
