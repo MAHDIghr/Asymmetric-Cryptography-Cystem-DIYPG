@@ -16,7 +16,21 @@
    manner.
 */
 
-//...
+void printKey(const rsaKey_t *key) {
+    printf("Clef :\n");
+    printf("  Exposant : %llu\n", key->E);
+    printf("  Modulo   : %llu\n", key->N);
+}
+
+void printKeyPair(const keyPair_t *keyPair) {
+    printf("=== Clé Publique ===\n");
+    printf("Exposant (C) : %llu\n", keyPair->pubKey.E);
+    printf("Modulo     : %llu\n", keyPair->pubKey.N);
+    printf("----------------------\n");
+    printf("=== Clé Privée ===\n");
+    printf("Exposant (U) : %llu\n", keyPair->privKey.E);
+    printf("Modulo     : %llu\n", keyPair->privKey.N);
+}
 
 
 /*===========================================================================================
@@ -35,7 +49,6 @@ void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pub
    /// \brief Encrypt le tableau d'octets input de longueur length avec la clé publique pubKey et retourne le tableau encryptée output
    for (uint64_t i = 0; i < length; i++) {
        output[i] = (uint8_t) puissance_mod_n(input[i], pubKey->E, pubKey->N);
-       printf("Chiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
    }
 }
 
@@ -43,7 +56,6 @@ void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pri
    /// \brief Decrypte le tableau d'octets input de longueur length avec la clé privée privKey et retourne le tableau décrypté output
    for (uint64_t i = 0; i < length; i++) {
        output[i] = (uint8_t) puissance_mod_n(input[i], privKey->E, privKey->N);
-       printf("Déchiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
    }
 }
 

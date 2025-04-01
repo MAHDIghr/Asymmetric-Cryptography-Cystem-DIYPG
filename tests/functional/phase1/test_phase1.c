@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//############################################################################## chiffrement/dechiffrement ############################################################
+
 void test_rsa_encrypt_decrypt(const uint8_t *input, uint64_t length, const char *test_name) {
     rsaKey_t pubKey, privKey;
     pubKey.E = 3;   // Exposant de la clé publique
@@ -28,7 +30,7 @@ void test_rsa_encrypt_decrypt(const uint8_t *input, uint64_t length, const char 
         assert(input[i] == decrypted[i]);
     }
 
-    printf("%s succeeded.\n", test_name);
+    printf("%s réalisé avec succès.\n", test_name);
 }
 
 void test_rsa_single_byte() {
@@ -117,13 +119,16 @@ void test_base64_file_conversion() {
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
+
     test_rsa_single_byte();
     test_rsa_multiple_bytes();
     test_rsa_empty_message();
     test_rsa_long_message();
     test_rsa_8_bytes_message();
     printf("Tous les tests phase 1.1 réussis.\n");
+
     test_base64_file_conversion();
     printf("Le test de la phase 1.3 réussi.\n");
+
     return 0;
 }

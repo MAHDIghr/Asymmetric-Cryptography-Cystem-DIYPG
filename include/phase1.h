@@ -7,6 +7,9 @@
 #include "rsa_common_header.h"
 #include <stdint.h>
 
+void printKey(const rsaKey_t *key);
+
+void printKeyPair(const keyPair_t *keyPair);
 
 void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pubKey);
 
