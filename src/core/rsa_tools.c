@@ -5,7 +5,7 @@
 
 #include "../../include/rsa_common_header.h"
 #include "../../include/rsa_tools.h"
-#include "bezout.h"
+#include "../../include/bezout.h"
 
 
 FILE *logfp = NULL;  // Initially NULL, set it later in main or a function
