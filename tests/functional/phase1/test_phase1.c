@@ -43,6 +43,25 @@ void test_rsa_extended() {
     test_rsa(input, strlen((char *)input), "Test avec une phrase complète");
 }
 
+void test_base64_file_conversion() {
+    /// \brief fonnction de test pour les conversions Base 64
+    const char *binary_input = "../../data/input/test_binary.dat";
+    const char *base64_output = "../../data/output/test_base64.txt";
+    const char *binary_reconstructed = "../../data/output/test_binary_reconstructed.dat";
+
+    if (convert_binary_to_base64(binary_input, base64_output) == 0) {
+        printf("Binary to Base64 conversion successful.\n");
+    } else {
+        printf("Binary to Base64 conversion failed.\n");
+    }
+
+    if (convert_base64_to_binary(base64_output, binary_reconstructed) == 0) {
+        printf("Base64 to Binary conversion successful.\n");
+    } else {
+        printf("Base64 to Binary conversion failed.\n");
+    }
+}
+
 int main() {
     test_rsa_encrypt_decrypt();
     test_rsa_special_characters();
@@ -50,5 +69,7 @@ int main() {
     test_rsa_empty_input();
     test_rsa_extended();
     printf("Tous les tests phase 1.1 réussis.\n");
+    test_base64_file_conversion();
+    printf("Le test de la phase 1.3 réussi.\n");
     return 0;
 }
