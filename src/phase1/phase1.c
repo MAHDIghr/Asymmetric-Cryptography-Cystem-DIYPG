@@ -15,21 +15,6 @@
    manner.
 */
 
-void printKey(const rsaKey_t *key) {
-    printf("Clef :\n");
-    printf("  Exposant : %llu\n", key->E);
-    printf("  Modulo   : %llu\n", key->N);
-}
-
-void printKeyPair(const keyPair_t *keyPair) {
-    printf("=== Clé Publique ===\n");
-    printf("Exposant (C) : %llu\n", keyPair->pubKey.E);
-    printf("Modulo     : %llu\n", keyPair->pubKey.N);
-    printf("----------------------\n");
-    printf("=== Clé Privée ===\n");
-    printf("Exposant (U) : %llu\n", keyPair->privKey.E);
-    printf("Modulo     : %llu\n", keyPair->privKey.N);
-}
 
 
 /*===========================================================================================
