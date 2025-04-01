@@ -15,8 +15,8 @@ void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pub
 
 void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *privKey);
 
-int convert_binary_to_base64(const char *input_filename, const char *output_filename);
+char *convert_binary_to_base64(const unsigned char *data, size_t input_length);
 
-int convert_base64_to_binary(const char *input_file, const char *output_file);
+unsigned char *convert_base64_to_binary(const char *base64_string, size_t *output_length);
 
 #endif

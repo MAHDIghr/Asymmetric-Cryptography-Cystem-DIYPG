@@ -1,6 +1,7 @@
 #include "../../../include/phase1.h"
 #include "../../../include/rsa_common_header.h"
 #include "../../../include/rsa_tools.h"
+#include "../../../include/other_base64.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,48 +79,95 @@ void test_rsa_8_bytes_message() {
 
 //############################################################# BASE 64 ##############################################################################
 
-void test_base64_file_conversion() {
-    const char *binary_input = "../../../data/input/test_binary.dat";
-    const char *base64_output = "../../../data/output/test_base64.txt";
-    const char *binary_reconstructed = "../../../data/output/test_binary_reconstructed.dat";
-
-    // Open the binary input file for reading
-    FILE *input_file = fopen(binary_input, "r");
-    if (input_file == NULL) {
-        perror("Error opening binary input file");
-        return;  // Exit if file can't be opened
-    }
-
-    // Convert binary to Base64
-    if (convert_binary_to_base64(binary_input, base64_output) == 0) {
-        printf("Binary to Base64 conversion successful.\n");
-    } else {
-        printf("Binary to Base64 conversion failed.\n");
-    }
-
-    fclose(input_file);  // Close the input file after reading
-
-    // Open the Base64 output file for reading
-    FILE *output_file = fopen(base64_output, "r");
-    if (output_file == NULL) {
-        perror("Error opening Base64 output file for reading");
-        return;  // Exit if file can't be opened
-    }
-
-    // Convert Base64 back to binary
-    if (convert_base64_to_binary(base64_output, binary_reconstructed) == 0) {
-        printf("Base64 to Binary conversion successful.\n");
-    } else {
-        printf("Base64 to Binary conversion failed.\n");
-    }
-
-    fclose(output_file);  // Close the Base64 output file
+// Helper function for printing binary data
+void print_hex(const uint8_t *data, size_t length) {
+    for (size_t i = 0; i < length; i++)
+        printf("%02X ", data[i]);
+    printf("\n");
 }
+
+// Test conversion of uint32_t
+void test_uint32() {
+    printf("\n[TEST] uint32_t Base64 Conversion\n");
+
+    uint32_t value = 0xDEADBEEF;  // Example 32-bit value
+    size_t encoded_length, decoded_length;
+
+    char *encoded = base64_encode((unsigned char *)&value, sizeof(value), &encoded_length);
+    printf("uint32: %08X -> Base64: %s\n", value, encoded);
+
+    uint32_t *decoded = (uint32_t *)base64_decode(encoded, encoded_length, &decoded_length);
+    assert(decoded_length == sizeof(uint32_t));
+    printf("Decoded: %08X\n", *decoded);
+
+    free(encoded);
+    free(decoded);
+}
+
+// Test conversion of uint64_t
+void test_uint64() {
+    printf("\n[TEST] uint64_t Base64 Conversion\n");
+
+    uint64_t value = 0x1122334455667788;  // Example 64-bit value
+    size_t encoded_length, decoded_length;
+
+    char *encoded = base64_encode((unsigned char *)&value, sizeof(value), &encoded_length);
+    printf("uint64: %016lX -> Base64: %s\n", value, encoded);
+
+    uint64_t *decoded = (uint64_t *)base64_decode(encoded, encoded_length, &decoded_length);
+    assert(decoded_length == sizeof(uint64_t));
+    printf("Decoded: %016lX\n", *decoded);
+
+    free(encoded);
+    free(decoded);
+}
+
+// Test conversion of a character string
+void test_string() {
+    printf("\n[TEST] String Base64 Conversion\n");
+
+    const char *message = "Hello, Base64!";
+    size_t encoded_length, decoded_length;
+
+    char *encoded = base64_encode((const unsigned char *)message, strlen(message), &encoded_length);
+    printf("Original: %s -> Base64: %s\n", message, encoded);
+
+    char *decoded = (char *)base64_decode(encoded, encoded_length, &decoded_length);
+    printf("Decoded: %.*s\n", (int)decoded_length, decoded);
+
+    free(encoded);
+    free(decoded);
+}
+
+// Test conversion of a binary key (16 bytes)
+void test_binary_key() {
+    printf("\n[TEST] Binary Key Base64 Conversion\n");
+
+    uint8_t key[16] = {0xBA, 0xAD, 0xF0, 0x0D, 0xCA, 0xFE, 0xBE, 0xEF,
+                       0xDE, 0xAD, 0xC0, 0xDE, 0x12, 0x34, 0x56, 0x78};
+    size_t encoded_length, decoded_length;
+
+    char *encoded = base64_encode(key, sizeof(key), &encoded_length);
+    printf("Binary Key: ");
+    print_hex(key, sizeof(key));
+    printf("Base64: %s\n", encoded);
+
+    uint8_t *decoded = base64_decode(encoded, encoded_length, &decoded_length);
+    printf("Decoded Key: ");
+    print_hex(decoded, decoded_length);
+
+    assert(memcmp(key, decoded, sizeof(key)) == 0);
+
+    free(encoded);
+    free(decoded);
+}
+
 
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
-
+    
+    // PHASE 1.1
     test_rsa_single_byte();
     test_rsa_multiple_bytes();
     test_rsa_empty_message();
@@ -127,7 +175,17 @@ int main(int argc, char *argv[]) {
     test_rsa_8_bytes_message();
     printf("Tous les tests phase 1.1 réussis.\n");
 
-    test_base64_file_conversion();
+    // PHASE 1.2
+
+    // PHASE 1.3
+    build_decoding_table();
+
+    test_uint32();
+    test_uint64();
+    test_string();
+    test_binary_key();
+
+    base64_cleanup();
     printf("Le test de la phase 1.3 réussi.\n");
 
     return 0;
