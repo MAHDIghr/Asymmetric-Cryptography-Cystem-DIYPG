@@ -21,7 +21,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAXI(a,b) (((a)>(b))?(a):(b))
 
-extern FILE * logfp;
+extern FILE *logfp;
 
 /* Type of a block of data */
 typedef uint8_t block_t[BLOCK_SIZE]; // une case par octet

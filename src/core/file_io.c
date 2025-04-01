@@ -18,7 +18,7 @@ uint8_t* read_message(const char *filename) {
 
     // Move to the end of the file to determine its size
     fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
+    size_t file_size = ftell(file);  // changet from long to size_t
 
     // If the file is empty or the operation fails, return NULL
     if (file_size <= 0) {
