@@ -11,9 +11,13 @@ void printKey(const rsaKey_t *key);
 
 void printKeyPair(const keyPair_t *keyPair);
 
-void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pubKey);
+uint64_t encrypt_char(uint64_t input, rsaKey_t *pubKey);
 
-void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *privKey);
+uint64_t decrypt_char(uint64_t input, rsaKey_t *privKey);
+
+uint8_t* encrypt_tab(uint8_t* input, int length, rsaKey_t* pubKey);
+
+uint8_t* decrypt_tab(uint8_t* input, int length, rsaKey_t* pubKey);
 
 char *convert_binary_to_base64(const unsigned char *data, size_t input_length);
 

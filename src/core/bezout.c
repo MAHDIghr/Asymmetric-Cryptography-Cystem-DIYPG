@@ -48,7 +48,7 @@ int64_t bezoutRSA(uint64_t a,uint64_t b,int64_t *u,int64_t *v){
   /// \brief le premier qui est supérieur à 2
   /// returns u
   int64_t r = bezout(a,b,u,v);
-  fprintf(logfp,"bezoutRSA : r = %llu U = %llu V = %llu\n",r,*u,*v);
+  fprintf(stdout,"bezoutRSA : r = %lu U = %lu V = %lu\n",r,*u,*v);
   while (*u<=2){
     *u = *u+b;
   }
