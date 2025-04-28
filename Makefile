@@ -8,6 +8,7 @@ SRC_CORE    = $(wildcard src/core/*.c)
 SRC_PHASE1  = $(wildcard src/phase1/*.c)
 SRC_PHASE2  = $(wildcard src/phase2/*.c)
 MAIN_SRC    = src/main.c
+INTERPRETE_SRC = src/phase3/interprete.c
 COMMON_SRCS = $(SRC_CORE) $(SRC_PHASE1) $(SRC_PHASE2)
 
 # Test source files
@@ -22,7 +23,7 @@ TEST_FUN_PHASE2_PHASE2    = tests/functional/phase2/test_phase2.c
 BIN_DIR = bin
 
 # Default target: all executables
-all: $(BIN_DIR) $(BIN_DIR)/main \
+all: $(BIN_DIR) $(BIN_DIR)/main $(BIN_DIR)/interprete \
      $(BIN_DIR)/test_fun_phase1_file_io \
      $(BIN_DIR)/test_fun_phase1 \
      $(BIN_DIR)/test_int_phase1 \
@@ -37,6 +38,10 @@ $(BIN_DIR):
 # Main executable
 $(BIN_DIR)/main: $(MAIN_SRC) $(COMMON_SRCS)
 	$(CC) $(CFLAGS) -o $@ $(MAIN_SRC) $(COMMON_SRCS) $(LDLIBS)
+
+# Interpreteur executable (nouveau)
+$(BIN_DIR)/interprete: $(INTERPRETEUR_SRC) $(COMMON_SRCS)
+	$(CC) $(CFLAGS) -o $@ $(INTERPRETEUR_SRC) $(COMMON_SRCS) $(LDLIBS)
 
 # Functional tests
 $(BIN_DIR)/test_fun_phase1_file_io: $(TEST_FUN_PHASE1_FILE_IO) $(COMMON_SRCS)

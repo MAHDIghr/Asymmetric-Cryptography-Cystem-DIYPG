@@ -23,4 +23,8 @@ char *convert_binary_to_base64(const unsigned char *data, size_t input_length);
 
 unsigned char *convert_base64_to_binary(const char *base64_string, size_t *output_length);
 
+void convert_file_binary_to_base64(const char *input_file, const char *output_file);
+
+void convert_file_base64_to_binary(const char *input_file, const char *output_file);
+
 #endif

@@ -212,6 +212,63 @@ void test_conversion() {
     free(decoded_data);
 }
 
+void test_file_conversion(const char *binary_input_file, const char *base64_output_file, const char *binary_output_file) {
+    // Étape 1 : Convertir le fichier binaire en Base64
+    printf("Conversion du fichier binaire en Base64...\n");
+    convert_file_binary_to_base64(binary_input_file, base64_output_file);
+    printf("Fichier Base64 généré : %s\n", base64_output_file);
+
+    // Étape 2 : Convertir le fichier Base64 en binaire
+    printf("Conversion du fichier Base64 en binaire...\n");
+    convert_file_base64_to_binary(base64_output_file, binary_output_file);
+    printf("Fichier binaire généré : %s\n", binary_output_file);
+
+    // Étape 3 : Comparer les fichiers binaires d'origine et décryptés
+    FILE *f_in1 = fopen(binary_input_file, "rb");
+    FILE *f_in2 = fopen(binary_output_file, "rb");
+
+    if (f_in1 == NULL || f_in2 == NULL) {
+        perror("Erreur d'ouverture des fichiers binaires pour la comparaison");
+        return;
+    }
+
+    // Obtenir la taille des fichiers
+    fseek(f_in1, 0, SEEK_END);
+    fseek(f_in2, 0, SEEK_END);
+    long size1 = ftell(f_in1);
+    long size2 = ftell(f_in2);
+    fseek(f_in1, 0, SEEK_SET);
+    fseek(f_in2, 0, SEEK_SET);
+
+    if (size1 != size2) {
+        printf("Les fichiers binaires n'ont pas la même taille.\n");
+        fclose(f_in1);
+        fclose(f_in2);
+        return;
+    }
+
+    // Comparer les fichiers octet par octet
+    int mismatch_found = 0;
+    for (long i = 0; i < size1; i++) {
+        unsigned char byte1, byte2;
+        fread(&byte1, 1, 1, f_in1);
+        fread(&byte2, 1, 1, f_in2);
+        if (byte1 != byte2) {
+            mismatch_found = 1;
+            break;
+        }
+    }
+
+    fclose(f_in1);
+    fclose(f_in2);
+
+    if (mismatch_found) {
+        printf("Les fichiers binaires ne correspondent pas.\n");
+    } else {
+        printf("Les fichiers binaires sont identiques. Test réussi !\n");
+    }
+}
+
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
@@ -234,6 +291,26 @@ int main(int argc, char *argv[]) {
     test_string();
     test_binary_key();
     test_conversion();
+
+    // Fichiers de test
+    const char *binary_input_file = "input_binary_file.bin";
+    const char *base64_output_file = "output_base64_file.txt";
+    const char *binary_output_file = "output_binary_file.bin";
+
+    // Créer un fichier binaire d'exemple pour les tests
+    FILE *f_in = fopen(binary_input_file, "wb");
+    if (f_in == NULL) {
+        perror("Erreur de création du fichier binaire d'entrée");
+        return -1;
+    }
+
+    // Exemple de données binaires : "Hello, world!" en ASCII
+    const char *data = "Hello, world!";
+    fwrite(data, 1, strlen(data), f_in);
+    fclose(f_in);
+
+    // Lancer le test
+    test_file_conversion(binary_input_file, base64_output_file, binary_output_file);
 
     base64_cleanup();
     printf("Le test de la phase 1.3 réussi.\n");
