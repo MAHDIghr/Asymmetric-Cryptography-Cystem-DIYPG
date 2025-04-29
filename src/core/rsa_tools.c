@@ -5,7 +5,7 @@
 
 #include "../../include/rsa_common_header.h"
 #include "../../include/rsa_tools.h"
-#include "bezout.h"
+#include "../../include/bezout.h"
 
 
 FILE *logfp = NULL;  // Initially NULL, set it later in main or a function
@@ -208,7 +208,7 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
   /// \brief génère une paire de "grandes" clefs, adaptées au cryptage RSA par bloc
   /// \param[out] pubKey : clef publique
   /// \param[out] privKey : clef privée
-  printf(">>>Max=%llu\n",max_prime);
+  printf(">>>Max=%lu\n",max_prime);
   int cpt1,cpt2;
   uint64_t num1 = genereUintRabin(max_prime,&cpt1);
   uint64_t num2 = genereUintRabin(max_prime,&cpt2);
@@ -217,7 +217,7 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
 
   uint64_t N = num1*num2;
   uint64_t M = (num1-1)*(num2-1); //indicatrice d'Euler
-  fprintf(stdout,"num1 = %llu num2 = %llu cpt1 = %d cpt2 = %d\n",num1,num2,cpt1,cpt2);
+  fprintf(stdout,"num1 = %lu num2 = %lu cpt1 = %d cpt2 = %d\n",num1,num2,cpt1,cpt2);
   uint64_t C = 2;
 
   // recherche d'un nombre premier avec M
@@ -228,8 +228,8 @@ void genKeysRabin(rsaKey_t *pubKey,rsaKey_t *privKey,uint64_t max_prime){
 
   int64_t U,V;
   bezoutRSA(C,M,&U,&V);
-  fprintf(stdout,"Retour de Bézout : U = %llu V = %llu C = %llu M = %llu\n",U,V,C,M);
-  fprintf(stdout,"Calcul : C*U + M*V = %llu, C*U + M*V mod M = %llu\n",C*U + M*V,(C*U + M*V)%M);
+  fprintf(stdout,"Retour de Bézout : U = %lu V = %lu C = %lu M = %lu\n",U,V,C,M);
+  fprintf(stdout,"Calcul : C*U + M*V = %lu, C*U + M*V mod M = %lu\n",C*U + M*V,(C*U + M*V)%M);
 
   assert(2<U && U<M);
 
@@ -243,9 +243,9 @@ void inputKey(uint64_t E,uint64_t N,rsaKey_t *key){
   /// \brief pour debug : permet de saisir une clef
   /// \note ça peut servir... ou pas.
   printf("Entrez l'exposant : ");
-  scanf("%llu",&E);
+  scanf("%lu",&E);
   printf("\nEntrez le modulo : ");
-  scanf("%llu",&N);
+  scanf("%lu",&N);
   key->E = E;
   key->N = N;
 }
@@ -257,7 +257,7 @@ void verifRabin(uint64_t max,int iterations){
     int cpt = 0;
     uint64_t candidatPremier = genereUintRabin(max,&cpt);
     int res = premier(candidatPremier);
-    printf("%llu ",candidatPremier);
+    printf("%lu ",candidatPremier);
     res == 0?printf("non premier\n"):printf("ok\n");
   }
 }

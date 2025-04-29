@@ -1,0 +1,16 @@
+id=jeannot
+type=personnel
+nom=Jean
+prenom=Dupuis
+comment=Voisin du dessus
+clef=boulot crypt
+clef=perso crypt
+clef=boulotsign sign
+
+id=emma
+type=professionnel
+nom=Emma
+prenom=Martin
+comment=Collègue de travail
+clef=travail crypt
+clef=travailsign sign

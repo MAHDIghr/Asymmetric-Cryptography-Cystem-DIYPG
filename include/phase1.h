@@ -7,13 +7,24 @@
 #include "rsa_common_header.h"
 #include <stdint.h>
 
+void printKey(const rsaKey_t *key);
 
-void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pubKey);
+void printKeyPair(const keyPair_t *keyPair);
 
-void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *privKey);
+uint64_t encrypt_char(uint64_t input, rsaKey_t *pubKey);
 
-int convert_binary_to_base64(const char *input_filename, const char *output_filename);
+uint64_t decrypt_char(uint64_t input, rsaKey_t *privKey);
 
-int convert_base64_to_binary(const char *input_file, const char *output_file);
+uint8_t* encrypt_tab(uint8_t* input, int length, rsaKey_t* pubKey);
+
+uint8_t* decrypt_tab(uint8_t* input, int length, rsaKey_t* pubKey);
+
+char *convert_binary_to_base64(const unsigned char *data, size_t input_length);
+
+unsigned char *convert_base64_to_binary(const char *base64_string, size_t *output_length);
+
+void convert_file_binary_to_base64(const char *input_file, const char *output_file);
+
+void convert_file_base64_to_binary(const char *input_file, const char *output_file);
 
 #endif

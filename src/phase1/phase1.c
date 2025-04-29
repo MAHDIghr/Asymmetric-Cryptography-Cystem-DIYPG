@@ -2,7 +2,6 @@
 #include "../../include/rsa_common_header.h"
 #include "../../include/rsa_tools.h"
 #include "../../include/other_base64.h"
-#include "../../include/file_io.h"
 #include <stdint.h>
 
 
@@ -16,7 +15,6 @@
    manner.
 */
 
-//...
 
 
 /*===========================================================================================
@@ -31,21 +29,43 @@
    encrypting or decrypting each element, with the corresponding output message generated. 
 */
 
-void rsa_encrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pubKey) {
-   /// \brief Encrypt le tableau d'octets input de longueur length avec la clé publique pubKey et retourne le tableau encryptée output
-   for (uint64_t i = 0; i < length; i++) {
-       output[i] = (uint8_t) puissance_mod_n(input[i], pubKey->E, pubKey->N);
-       printf("Chiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
-   }
+uint64_t encrypt_char(uint64_t input, rsaKey_t *pubKey) {
+   // Chiffrement du bloc en 64 bits avec la clé publique
+   return puissance_mod_n(input, pubKey->E, pubKey->N);
 }
 
-void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *privKey) {
-   /// \brief Decrypte le tableau d'octets input de longueur length avec la clé privée privKey et retourne le tableau décrypté output
-   for (uint64_t i = 0; i < length; i++) {
-       output[i] = (uint8_t) puissance_mod_n(input[i], privKey->E, privKey->N);
-       printf("Déchiffrement: input[%lu] = 0x%02x, output[%lu] = 0x%02x\n", i, input[i], i, output[i]);
-   }
+uint64_t decrypt_char(uint64_t input, rsaKey_t *privKey) {
+   // Déchiffrement du bloc en 64 bits avec la clé privée
+   return puissance_mod_n(input, privKey->E, privKey->N);
 }
+
+uint8_t* encrypt_tab(uint8_t* input, int length, rsaKey_t* pubKey) {
+   uint8_t* encrypted_tab = malloc(length * sizeof(uint8_t));  // Allocation pour octets chiffrés
+   if (encrypted_tab == NULL) {
+       return NULL;
+   }
+
+   for (int i = 0; i < length; i++) {
+       uint64_t encrypted = encrypt_char((uint64_t)input[i], pubKey);  // Chiffrement de chaque octet
+       encrypted_tab[i] = (uint8_t)(encrypted & 0xFF);  // Conservez seulement le premier octet du résultat
+   }
+   return encrypted_tab;
+}
+
+uint8_t* decrypt_tab(uint8_t* input, int length, rsaKey_t* privKey) {
+   uint8_t* decrypted_tab = malloc(length * sizeof(uint8_t));  // Allocation pour octets déchiffrés
+   if (decrypted_tab == NULL) {
+       return NULL;
+   }
+
+   for (int i = 0; i < length; i++) {
+       uint64_t decrypted = decrypt_char((uint64_t)input[i], privKey);  // Déchiffrement de chaque octet
+       decrypted_tab[i] = (uint8_t)(decrypted & 0xFF);  // Conservez seulement le premier octet du résultat
+   }
+   return decrypted_tab;
+}
+
+
 
 /*===========================================================================================
                 Phase 1.2 :                
@@ -76,48 +96,97 @@ void rsa_decrypt(uint8_t *input, uint64_t length, uint8_t *output, rsaKey_t *pri
    - Implement file-based conversions, where binary data in files is converted to Base64 and vice versa.
 */
 
-int convert_binary_to_base64(const char *input_filename, const char *output_filename) {
-   /// \brief Fonction pour convertir un fichier binaire en base64
-   size_t input_length;
-   uint8_t *binary_data = read_message(input_filename);
-   if (binary_data == NULL) {
-      printf("Erreur lors de la lecture du input.\n");
-       return -1;
-   }
-
-   size_t output_length;
-   char *base64_data = base64_encode(binary_data, input_length, &output_length);
-   free(binary_data);
-
-   if (base64_data == NULL) {
-      printf("Erreur lors de la conversion en base 64.\n");
-       return -1;
-   }
-
-   int result = write_message(output_filename, (uint8_t *)base64_data);
-   free(base64_data);
-   return result;
+char *convert_binary_to_base64(const unsigned char *data, size_t input_length) {
+   /// \brief Convert binaire en base64
+    size_t output_length;
+    char *encoded_data = base64_encode(data, input_length, &output_length);
+    return encoded_data;
 }
 
-int convert_base64_to_binary(const char *input_file, const char *output_file) {
-   /// \brief Fonction pour convertir un fichier base64 input_file en fichier binaire dans output_file
-   size_t input_length;
-   uint8_t *base64_data = read_message(input_file);
-   if (base64_data == NULL) {
-      printf("Erreur lors de la lecture du input.\n");
-       return -1;
+unsigned char *convert_base64_to_binary(const char *base64_string, size_t *output_length) {
+   /// \brief Converti  base64 string en binaire
+   return base64_decode(base64_string, strlen(base64_string), output_length);
+}
+
+void convert_file_binary_to_base64(const char *input_file, const char *output_file) {
+   FILE *f_in = fopen(input_file, "rb");
+   if (f_in == NULL) {
+       perror("Erreur d'ouverture du fichier d'entrée");
+       return;
    }
 
+   // Lire tout le fichier binaire
+   fseek(f_in, 0, SEEK_END);
+   long input_size = ftell(f_in);
+   fseek(f_in, 0, SEEK_SET);
+
+   unsigned char *data = (unsigned char *)malloc(input_size);
+   if (data == NULL) {
+       perror("Erreur d'allocation mémoire");
+       fclose(f_in);
+       return;
+   }
+
+   fread(data, 1, input_size, f_in);
+   fclose(f_in);
+
+   // Convertir en Base64
    size_t output_length;
-   uint8_t *binary_data = base64_decode((char *)base64_data, input_length, &output_length);
-   free(base64_data);
+   char *base64_encoded = convert_binary_to_base64(data, input_size);
+   free(data);
 
-   if (binary_data == NULL) {
-      printf("Erreur lors de la conversion en binaire.\n");
-       return -1;
+   // Écrire dans le fichier de sortie
+   FILE *f_out = fopen(output_file, "w");
+   if (f_out == NULL) {
+       perror("Erreur d'ouverture du fichier de sortie");
+       free(base64_encoded);
+       return;
    }
 
-   int result = write_message(output_file, binary_data);
-   free(binary_data);
-   return result;
+   fwrite(base64_encoded, 1, strlen(base64_encoded), f_out);
+   fclose(f_out);
+
+   free(base64_encoded);
+}
+
+void convert_file_base64_to_binary(const char *input_file, const char *output_file) {
+    FILE *f_in = fopen(input_file, "r");
+    if (f_in == NULL) {
+        perror("Erreur d'ouverture du fichier d'entrée");
+        return;
+    }
+
+    // Lire le contenu du fichier Base64
+    fseek(f_in, 0, SEEK_END);
+    long input_size = ftell(f_in);
+    fseek(f_in, 0, SEEK_SET);
+
+    char *base64_data = (char *)malloc(input_size + 1);
+    if (base64_data == NULL) {
+        perror("Erreur d'allocation mémoire");
+        fclose(f_in);
+        return;
+    }
+
+    fread(base64_data, 1, input_size, f_in);
+    fclose(f_in);
+    base64_data[input_size] = '\0';  // Ajouter le caractère de fin de chaîne
+
+    // Décoder en binaire
+    size_t output_length;
+    unsigned char *decoded_data = convert_base64_to_binary(base64_data, &output_length);
+    free(base64_data);
+
+    // Écrire dans le fichier binaire de sortie
+    FILE *f_out = fopen(output_file, "wb");
+    if (f_out == NULL) {
+        perror("Erreur d'ouverture du fichier de sortie");
+        free(decoded_data);
+        return;
+    }
+
+    fwrite(decoded_data, 1, output_length, f_out);
+    fclose(f_out);
+
+    free(decoded_data);
 }
