@@ -137,6 +137,7 @@ char* exporter_cle_publique_base64(const mpz_t n, const mpz_t e) {
 }
 
 void fichier_binaire_vers_base64(const char* chemin_in, const char* chemin_out) {
+    /// \brief convertit un fichier binaire en base64.
     FILE *fin = fopen(chemin_in, "rb");
     FILE *fout = fopen(chemin_out, "w");
     if (!fin || !fout) {
@@ -161,6 +162,7 @@ void fichier_binaire_vers_base64(const char* chemin_in, const char* chemin_out) 
 }
 
 void fichier_base64_vers_binaire(const char* chemin_in, const char* chemin_out) {
+    /// \brief Convertit un fichier base 64 en fichier binaire.
     FILE *fin = fopen(chemin_in, "r");
     FILE *fout = fopen(chemin_out, "wb");
     if (!fin || !fout) {
