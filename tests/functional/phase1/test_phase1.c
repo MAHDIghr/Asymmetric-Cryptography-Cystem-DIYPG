@@ -292,9 +292,9 @@ int main(int argc, char *argv[]) {
     test_conversion();
 
     // Fichiers de test
-    const char *binary_input_file = "data/input/bin_in.txt";
-    const char *base64_output_file = "data/output/b64out.txt";
-    const char *binary_output_file = "data/output/bin_out.txt";
+    const char *binary_input_file = "data/input/bin_in.bin";
+    const char *base64_output_file = "data/output/b64_out.txt";
+    const char *binary_output_file = "data/output/bin_out.bin";
 
     // Créer un fichier binaire d'exemple pour les tests
     FILE *f_in = fopen(binary_input_file, "wb");
@@ -313,6 +313,9 @@ int main(int argc, char *argv[]) {
 
     base64_cleanup();
     printf("Le test de la phase 1.3 réussi.\n");
+    remove(binary_output_file);
+    remove(base64_output_file );
+    remove(binary_input_file);
 
     return 0;
 }
