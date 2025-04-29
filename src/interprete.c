@@ -1,7 +1,6 @@
-/// \file interprete.h
+/// \file interprete.c
 /// \author Oliver SEARLE
 /// \date avril 2025
-// interpreteur.c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -369,11 +368,14 @@ void interpreteur() {
             char* id = strtok(NULL, " ");
             char* filename = strtok(NULL, " ");
             if (!id || !filename) { printf("Usage: savepub <keyid> <filename>\n"); continue; }
+
             Clef* c = chercher_clef(id);
             if (!c) { printf("Clé non trouvée.\n"); continue; }
+            // Convetit la clef publique en base64
             char* pub_b64 = exporter_cle_publique_base64(c->n, c->e);
             FILE* f = fopen(filename, "w");
             if (!f) { perror("Erreur écriture"); free(pub_b64); continue; }
+            // écrit la clef convertie dans le fichier
             fprintf(f, "%s\n", pub_b64);
             fclose(f);
             free(pub_b64);
@@ -392,6 +394,7 @@ void interpreteur() {
             }
             for (int i = 0; i < nb_contacts; i++) {
                 for (int j = 0; j < annuaire_contacts[i].nb_clefs; j++) {
+                    // regarde les clefs de tout les contacts
                     if (strcmp(annuaire_contacts[i].clefs[j].id, id) == 0) {
                         mpz_clears(annuaire_contacts[i].clefs[j].n, annuaire_contacts[i].clefs[j].e, NULL);
                         annuaire_contacts[i].clefs[j] = annuaire_contacts[i].clefs[--annuaire_contacts[i].nb_clefs];

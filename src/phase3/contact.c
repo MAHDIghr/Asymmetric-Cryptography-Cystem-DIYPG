@@ -1,14 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <gmp.h>
+/// \file contact.c
+/// \author Oliver SEARLE
+/// \date avril 2025
+
 #include "../../include/contact.h"
+#include <stdio.h>
+#include <string.h>
 
 Contact annuaire_contacts[MAX_CONTACTS];
-int nb_contacts = 0;
+int nb_contacts;
+
+// === Contacts ===
 
 void init_contact(Contact* c, const char* id) {
     strncpy(c->id, id, sizeof(c->id));
+    c->id[sizeof(c->id) - 1] = '\0';  // sécurité
+
     c->nom[0] = '\0';
     c->prenom[0] = '\0';
     c->comment[0] = '\0';
@@ -22,6 +28,8 @@ void liberer_contact(Contact* c) {
     }
     c->nb_clefs = 0;
 }
+
+
 
 void ajouter_contact(const char* id) {
     if (nb_contacts >= MAX_CONTACTS) {
@@ -50,25 +58,26 @@ void ajouter_contact(const char* id) {
     printf("Contact '%s' ajouté.\n", id);
 }
 
+
 void lister_contacts(const char* id, const char* nom) {
     for (int i = 0; i < nb_contacts; i++) {
         if ((id && strcmp(annuaire_contacts[i].id, id) == 0) ||
             (nom && strcmp(annuaire_contacts[i].nom, nom) == 0) ||
             (!id && !nom)) {
-            printf("ID: %s | Nom: %s %s | Commentaire: %s | Type: %s\n",
+            printf("ID: %s | Nom: %s %s | Commentaire: %s\n",
                    annuaire_contacts[i].id,
                    annuaire_contacts[i].prenom,
                    annuaire_contacts[i].nom,
-                   annuaire_contacts[i].comment,
-                   annuaire_contacts[i].type);
+                   annuaire_contacts[i].comment);
             for (int j = 0; j < annuaire_contacts[i].nb_clefs; j++) {
                 printf("  > Clé: %s (%s)\n",
-                       annuaire_contacts[i].clefs[j].id,
-                       annuaire_contacts[i].clefs[j].type);
+                    annuaire_contacts[i].clefs[j].id,
+                    annuaire_contacts[i].clefs[j].type);
             }
         }
     }
 }
+
 
 void modifier_contact(const char* id) {
     for (int i = 0; i < nb_contacts; i++) {
@@ -91,18 +100,15 @@ void ajouter_cle_contact(const char* id) {
                 printf("Trop de clefs pour ce contact.\n");
                 return;
             }
-
-            ClefContact *clef = &annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs];
-
             printf("ID de la nouvelle clef : ");
-            fgets(clef->id, sizeof(clef->id), stdin);
-            clef->id[strcspn(clef->id, "\n")] = 0;
+            fgets(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id, 100, stdin);
+            annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id[strcspn(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id, "\n")] = 0;
 
             printf("Type (crypt / sign) : ");
-            fgets(clef->type, sizeof(clef->type), stdin);
-            clef->type[strcspn(clef->type, "\n")] = 0;
+            fgets(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type, 10, stdin);
+            annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type[strcspn(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type, "\n")] = 0;
 
-            mpz_inits(clef->n, clef->e, NULL);
+            mpz_inits(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].n, annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].e, NULL);
             annuaire_contacts[i].nb_clefs++;
 
             printf("Clé ajoutée.\n");

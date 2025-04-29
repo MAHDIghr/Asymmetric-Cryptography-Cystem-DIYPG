@@ -14,6 +14,7 @@ void init_clef(Clef *c, const char *id, const char *type) {
 }
 
 void liberer_clef(Clef *c) {
+    /// \brief détruit un identificateur et les clés associées
     mpz_clears(c->n, c->e, c->d, NULL);
 }
 

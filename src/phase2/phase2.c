@@ -116,6 +116,7 @@ void rsa_dechiffrer_fichier(const char* chemin_in, const char* chemin_out, const
 
 
 char* exporter_cle_publique_base64(const mpz_t n, const mpz_t e) {
+    /// \brief Convertit un clef en Base64
     size_t n_size, e_size;
     uint8_t* n_bin = (uint8_t*) mpz_export(NULL, &n_size, 1, 1, 0, 0, n);
     uint8_t* e_bin = (uint8_t*) mpz_export(NULL, &e_size, 1, 1, 0, 0, e);
