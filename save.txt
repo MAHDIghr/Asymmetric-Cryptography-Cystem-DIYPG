@@ -4,4 +4,15 @@ type=pub
 n=681911633531
 e=5
 d=136381993373
+id=2
+type=priv
+n=516816367681
+e=5
+d=206725969973
 === CONTACTS ===
+id=1
+type=pro
+nom=Oliver
+prenom=Searle
+comment=oops
+clef=4 crypt

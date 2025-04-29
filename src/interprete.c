@@ -27,8 +27,8 @@ void afficher_aide() {
     printf("  uncrypt <filein> <fileout> <keyid>\n");
     printf("  signtext <filein> <keyid> <fileout>\n");
     printf("  verifysign <filein> <filesig> <keyid>\n");
-    printf("  save [filename]\n");
-    printf("  load [filename]\n");
+    printf("  save <keyid> [filename]\n");
+    printf("  load <keyid> [filename]\n");
     printf("  savepub <keyid> <filename>\n");
     printf("  bin-2b64 <filein> <fileout>\n");
     printf("  b64-2bin <filein> <fileout>\n");
@@ -124,6 +124,22 @@ void sauvegarder_clefs_contacts(const char* filename) {
     printf("Sauvegarde effectuée.\n");
 }
 
+void sauvegarder_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
+    const char* temp_plain = "temp_save.txt";
+    const char* final_file = filename ? filename : "save.enc";
+
+    // 1. Sauvegarder en clair dans un fichier temporaire
+    sauvegarder_clefs_contacts(temp_plain);
+
+    // 2. Chiffrer avec RSA
+    rsa_chiffrer_fichier(temp_plain, final_file, clef_crypt->e, clef_crypt->n);
+
+    // 3. Supprimer le fichier temporaire
+    remove(temp_plain);
+
+    printf("Fichier sécurisé sauvegardé dans %s\n", final_file);
+}
+
 void charger_clefs_contacts(const char* filename) {
     /// \brief Charge du fichier (filename ou save.txt par defaut) toutes les clefs et les contacts.
     FILE *f = fopen(filename ? filename : "save.txt", "r");
@@ -198,6 +214,23 @@ void charger_clefs_contacts(const char* filename) {
     fclose(f);
     printf("Chargement effectué.\n");
 }
+
+void charger_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
+    const char* temp_plain = "temp_load.txt";
+    const char* source = filename ? filename : "save.enc";
+
+    // 1. Déchiffrer dans un fichier temporaire
+    rsa_dechiffrer_fichier(source, temp_plain, clef_crypt->d, clef_crypt->n);
+
+    // 2. Charger les données comme avant
+    charger_clefs_contacts(temp_plain);
+
+    // 3. Supprimer le fichier temporaire
+    remove(temp_plain);
+
+    printf("Fichier sécurisé chargé depuis %s\n", source);
+}
+
 
 // === Signature ===
 
@@ -358,11 +391,18 @@ void interpreteur() {
         }
         else if (strcmp(cmd, "save") == 0) {
             char* file = strtok(NULL, " ");
-            sauvegarder_clefs_contacts(file);
+            char* keyid = strtok(NULL, " ");
+            Clef* c = chercher_clef(keyid);
+            if (!c) { printf("Clé de chiffrement non trouvée.\n"); continue; }
+            sauvegarder_clefs_contacts_secure(file, c);
         }
+        
         else if (strcmp(cmd, "load") == 0) {
+            char* keyid = strtok(NULL, " ");
             char* file = strtok(NULL, " ");
-            charger_clefs_contacts(file);
+            Clef* c = chercher_clef(keyid);
+            if (!c) { printf("Clé de déchiffrement non trouvée.\n"); continue; }
+            charger_clefs_contacts_secure(file, c);
         }
         else if (strcmp(cmd, "savepub") == 0) {
             char* id = strtok(NULL, " ");
