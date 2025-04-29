@@ -14,7 +14,13 @@
    The primary objective is to write functions that take key data and output it in a clear and understandable 
    manner.
 */
-
+void print_rsa_key(const rsaKey_t *key, const char *type) {
+    if (strcmp(type, "publique") == 0) {
+        printf("Clé publique : (e=%" PRIu64 ", n=%" PRIu64 ")\n", key->E, key->N);
+    } else {
+        printf("Clé privée : (d=%" PRIu64 ", n=%" PRIu64 ")\n", key->E, key->N);
+    }
+ }
 
 
 /*===========================================================================================
