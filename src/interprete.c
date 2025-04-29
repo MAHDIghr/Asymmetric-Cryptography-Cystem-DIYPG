@@ -13,6 +13,7 @@
 #include "../include/phase2.h"
 #include "../include/contact.h"
 #include "../include/clef.h"
+#include "../include/sha256.h"
 
 #define BUFFER_SIZE 512
 
@@ -27,8 +28,8 @@ void afficher_aide() {
     printf("  uncrypt <filein> <fileout> <keyid>\n");
     printf("  signtext <filein> <keyid> <fileout>\n");
     printf("  verifysign <filein> <filesig> <keyid>\n");
-    printf("  save <keyid> [filename]\n");
-    printf("  load <keyid> [filename]\n");
+    printf("  save [filename] <keyid> \n");
+    printf("  load [filename] <keyid>\n");
     printf("  savepub <keyid> <filename>\n");
     printf("  bin-2b64 <filein> <fileout>\n");
     printf("  b64-2bin <filein> <fileout>\n");
@@ -125,17 +126,16 @@ void sauvegarder_clefs_contacts(const char* filename) {
 }
 
 void sauvegarder_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
-    const char* temp_plain = "temp_save.txt";
+    const char* temp = "temp.txt";
     const char* final_file = filename ? filename : "save.enc";
 
-    // 1. Sauvegarder en clair dans un fichier temporaire
-    sauvegarder_clefs_contacts(temp_plain);
+    // Sauvegarder en clair dans un fichier temporaire
+    sauvegarder_clefs_contacts(temp);
 
-    // 2. Chiffrer avec RSA
-    rsa_chiffrer_fichier(temp_plain, final_file, clef_crypt->e, clef_crypt->n);
+    // Chiffrer avec RSA
+    rsa_chiffrer_fichier(temp, final_file, clef_crypt->e, clef_crypt->n);
 
-    // 3. Supprimer le fichier temporaire
-    remove(temp_plain);
+    remove(temp);
 
     printf("Fichier sécurisé sauvegardé dans %s\n", final_file);
 }
@@ -216,17 +216,16 @@ void charger_clefs_contacts(const char* filename) {
 }
 
 void charger_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
-    const char* temp_plain = "temp_load.txt";
+    const char* temp = "temp.txt";
     const char* source = filename ? filename : "save.enc";
 
-    // 1. Déchiffrer dans un fichier temporaire
-    rsa_dechiffrer_fichier(source, temp_plain, clef_crypt->d, clef_crypt->n);
+    // Déchiffrer dans un fichier temporaire
+    rsa_dechiffrer_fichier(source, temp, clef_crypt->d, clef_crypt->n);
 
-    // 2. Charger les données comme avant
-    charger_clefs_contacts(temp_plain);
+    // Charger les données comme avant
+    charger_clefs_contacts(temp);
 
-    // 3. Supprimer le fichier temporaire
-    remove(temp_plain);
+    remove(temp);
 
     printf("Fichier sécurisé chargé depuis %s\n", source);
 }
@@ -235,8 +234,6 @@ void charger_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
 // === Signature ===
 
 void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
-    /// \brief Signe un texte lu dans le fichier d'entrée (filein), avec la clé privé de 
-    // l'identificateur (clef) et écrit le résultat en base64 dans le fichier de sortie (fileout)
     FILE *fin = fopen(filein, "rb");
     FILE *fout = fopen(fileout, "w");
     if (!fin || !fout) { perror("Erreur fichiers"); return; }
@@ -249,11 +246,19 @@ void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
     fread(buffer, 1, taille, fin);
     fclose(fin);
 
-    mpz_t message, signature;
-    mpz_inits(message, signature, NULL);
-    mpz_import(message, taille, 1, 1, 0, 0, buffer);
+    // === HASHAGE SHA-256 ===
+    BYTE hash_bin[SHA256_BLOCK_SIZE];
+    SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, buffer, taille);
+    sha256_final(&ctx, hash_bin);
 
-    rsa_dechiffrer_bloc(signature, message, clef->d, clef->n);
+    // Conversion du hash en mpz_t
+    mpz_t hash_mpz, signature;
+    mpz_inits(hash_mpz, signature, NULL);
+    mpz_import(hash_mpz, SHA256_BLOCK_SIZE, 1, 1, 0, 0, hash_bin);
+
+    rsa_dechiffrer_bloc(signature, hash_mpz, clef->d, clef->n);
 
     size_t size;
     uint8_t *bin = (uint8_t *) mpz_export(NULL, &size, 1, 1, 0, 0, signature);
@@ -264,60 +269,106 @@ void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
     free(buffer);
     free(bin);
     free(base64_encoded);
-    mpz_clears(message, signature, NULL);
+    mpz_clears(hash_mpz, signature, NULL);
     fclose(fout);
     printf("Signature écrite dans %s.\n", fileout);
 }
 
+
 void verifier_signature(const char* filein, const char* filesign, Clef* clef) {
-    /// \brief vérifie la signature d'un texte. Le texte est lu dans le fichier d'entrée (filein),
-    // la signature en base64 est lue dans le fichier signature (filesign). On utilise la clef publique de l'identificateur (clef) de type "sign".
     FILE *fin = fopen(filein, "rb");
     FILE *fsig = fopen(filesign, "r");
-    if (!fin || !fsig) { perror("Erreur fichiers"); return; }
+    if (!fin || !fsig) {
+        perror("Erreur fichiers");
+        if (fin) fclose(fin);
+        if (fsig) fclose(fsig);
+        return;
+    }
 
+    // Lecture du fichier original
     fseek(fin, 0, SEEK_END);
     long taille_ori = ftell(fin);
     rewind(fin);
+    if (taille_ori <= 0) {
+        fprintf(stderr, "Erreur : fichier d'entrée vide ou invalide.\n");
+        fclose(fin); fclose(fsig);
+        return;
+    }
 
     unsigned char *buffer_ori = malloc(taille_ori);
+    if (!buffer_ori) {
+        perror("Erreur malloc buffer_ori");
+        fclose(fin); fclose(fsig);
+        return;
+    }
     fread(buffer_ori, 1, taille_ori, fin);
     fclose(fin);
 
+    // Lecture du fichier de signature
     fseek(fsig, 0, SEEK_END);
     long taille_sig = ftell(fsig);
     rewind(fsig);
+    if (taille_sig <= 0) {
+        fprintf(stderr, "Erreur : fichier de signature vide ou invalide.\n");
+        free(buffer_ori); fclose(fsig);
+        return;
+    }
 
     char *buffer_sig = malloc(taille_sig + 1);
+    if (!buffer_sig) {
+        perror("Erreur malloc buffer_sig");
+        free(buffer_ori); fclose(fsig);
+        return;
+    }
+
     fread(buffer_sig, 1, taille_sig, fsig);
     buffer_sig[taille_sig] = '\0';
     fclose(fsig);
 
-    size_t decoded_size;
+    // Décodage Base64
+    size_t decoded_size = 0;
     unsigned char *decoded = convert_base64_to_binary(buffer_sig, &decoded_size);
     free(buffer_sig);
 
-    mpz_t original, signature, verif;
-    mpz_inits(original, signature, verif, NULL);
-    mpz_import(original, taille_ori, 1, 1, 0, 0, buffer_ori);
+    if (!decoded || decoded_size == 0) {
+        fprintf(stderr, "Erreur : signature décodée invalide.\n");
+        free(buffer_ori);
+        free(decoded);  // même si NULL, free est safe
+        return;
+    }
+
+    // Initialisation et hash du fichier original
+    mpz_t hash_original, signature, verif;
+    mpz_inits(hash_original, signature, verif, NULL);
+
+    BYTE hash_bin[SHA256_BLOCK_SIZE];
+    SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, buffer_ori, taille_ori);
+    sha256_final(&ctx, hash_bin);
+    free(buffer_ori);
+
+    mpz_import(hash_original, SHA256_BLOCK_SIZE, 1, 1, 0, 0, hash_bin);
     mpz_import(signature, decoded_size, 1, 1, 0, 0, decoded);
+    free(decoded);
 
     rsa_chiffrer_bloc(verif, signature, clef->e, clef->n);
 
-    if (mpz_cmp(original, verif) == 0)
+    if (mpz_cmp(hash_original, verif) == 0)
         printf("Signature VALIDE.\n");
     else
         printf("Signature INVALIDE.\n");
 
-    free(buffer_ori);
-    free(decoded);
-    mpz_clears(original, signature, verif, NULL);
+    mpz_clears(hash_original, signature, verif, NULL);
 }
+
+
 
 
 // === Certificat ===
 
 void generer_certificat(const char* id, const char* action) {
+    /// \brief Crée un fichier x_x_request.txt avec une demande à l'autorité de certification.
     Clef* c = chercher_clef(id);
     if (!c) {
         printf("Clef non trouvée.\n");
@@ -398,8 +449,8 @@ void interpreteur() {
         }
         
         else if (strcmp(cmd, "load") == 0) {
-            char* keyid = strtok(NULL, " ");
             char* file = strtok(NULL, " ");
+            char* keyid = strtok(NULL, " ");
             Clef* c = chercher_clef(keyid);
             if (!c) { printf("Clé de déchiffrement non trouvée.\n"); continue; }
             charger_clefs_contacts_secure(file, c);
