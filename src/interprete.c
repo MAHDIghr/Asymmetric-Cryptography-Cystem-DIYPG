@@ -1,33 +1,20 @@
-/// \file interprete.h
+/// \file interprete.c
 /// \author Oliver SEARLE
 /// \date avril 2025
-// interpreteur.c
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gmp.h>
-#include "../../include/phase2.h"
-#include "../../include/rsa_tools.h"
-#include "../../include/contact.h"
-#include "../../include/phase1.h"
-#include "../../include/rsa_common_header.h"
-#include "../../include/phase2.h"
+#include "../include/phase2.h"
+#include "../include/rsa_tools.h"
+#include "../include/phase1.h"
+#include "../include/rsa_common_header.h"
+#include "../include/phase2.h"
+#include "../include/contact.h"
+#include "../include/clef.h"
 
-#define MAX_CLEFS 100
 #define BUFFER_SIZE 512
-
-typedef struct {
-    char id[100];
-    char type[10]; // "crypt" ou "sign"
-    mpz_t n, e, d;
-} Clef;
-
-Clef annuaire[MAX_CLEFS];
-int nb_clefs = 0;
-
-Contact annuaire_contacts[MAX_CONTACTS];
-int nb_contacts = 0;
 
 // === Aide ===
 
@@ -58,24 +45,6 @@ void afficher_aide() {
 
 // === Fonctions utilitaires ===
 
-void init_clef(Clef *c, const char *id, const char *type) {
-    strncpy(c->id, id, sizeof(c->id));
-    strncpy(c->type, type, sizeof(c->type));
-    mpz_inits(c->n, c->e, c->d, NULL);
-}
-
-void liberer_clef(Clef *c) {
-    mpz_clears(c->n, c->e, c->d, NULL);
-}
-
-Clef* chercher_clef(const char* id) {
-    for (int i = 0; i < nb_clefs; i++) {
-        if (strcmp(annuaire[i].id, id) == 0)
-            return &annuaire[i];
-    }
-    return NULL;
-}
-//
 void sauvegarder_clefs(const char* filename) {
     FILE *f = fopen(filename, "w");
     if (!f) { perror("Erreur sauvegarde"); return; }
@@ -124,18 +93,9 @@ void charger_clefs(const char* filename) {
     printf("Clés chargées depuis %s.\n", filename);
 }
 
-void afficher_clef(Clef *c, const char* quoi) {
-    printf("Identifiant: %s (type: %s)\n", c->id, c->type);
-    if (strcmp(quoi, "pub") == 0 || strcmp(quoi, "all") == 0) {
-        gmp_printf("e: %Zx\nn: %Zx\n", c->e, c->n);
-    }
-    if (strcmp(quoi, "priv") == 0 || strcmp(quoi, "all") == 0) {
-        gmp_printf("d: %Zx\n", c->d);
-    }
-}
-//
 
 void sauvegarder_clefs_contacts(const char* filename) {
+    /// \brief Sauvegarde dans un fichier (filename ou save.txt par defaut) toutes les clefs et tout les contacts. 
     FILE *f = fopen(filename ? filename : "save.txt", "w");
     if (!f) { perror("Erreur sauvegarde"); return; }
 
@@ -165,6 +125,7 @@ void sauvegarder_clefs_contacts(const char* filename) {
 }
 
 void charger_clefs_contacts(const char* filename) {
+    /// \brief Charge du fichier (filename ou save.txt par defaut) toutes les clefs et les contacts.
     FILE *f = fopen(filename ? filename : "save.txt", "r");
     if (!f) { perror("Erreur chargement"); return; }
 
@@ -238,11 +199,11 @@ void charger_clefs_contacts(const char* filename) {
     printf("Chargement effectué.\n");
 }
 
-
-
 // === Signature ===
 
 void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
+    /// \brief Signe un texte lu dans le fichier d'entrée (filein), avec la clé privé de 
+    // l'identificateur (clef) et écrit le résultat en base64 dans le fichier de sortie (fileout)
     FILE *fin = fopen(filein, "rb");
     FILE *fout = fopen(fileout, "w");
     if (!fin || !fout) { perror("Erreur fichiers"); return; }
@@ -275,18 +236,20 @@ void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
     printf("Signature écrite dans %s.\n", fileout);
 }
 
-void verifier_signature(const char* fileoriginal, const char* filesign, Clef* clef) {
-    FILE *fori = fopen(fileoriginal, "rb");
+void verifier_signature(const char* filein, const char* filesign, Clef* clef) {
+    /// \brief vérifie la signature d'un texte. Le texte est lu dans le fichier d'entrée (filein),
+    // la signature en base64 est lue dans le fichier signature (filesign). On utilise la clef publique de l'identificateur (clef) de type "sign".
+    FILE *fin = fopen(filein, "rb");
     FILE *fsig = fopen(filesign, "r");
-    if (!fori || !fsig) { perror("Erreur fichiers"); return; }
+    if (!fin || !fsig) { perror("Erreur fichiers"); return; }
 
-    fseek(fori, 0, SEEK_END);
-    long taille_ori = ftell(fori);
-    rewind(fori);
+    fseek(fin, 0, SEEK_END);
+    long taille_ori = ftell(fin);
+    rewind(fin);
 
     unsigned char *buffer_ori = malloc(taille_ori);
-    fread(buffer_ori, 1, taille_ori, fori);
-    fclose(fori);
+    fread(buffer_ori, 1, taille_ori, fin);
+    fclose(fin);
 
     fseek(fsig, 0, SEEK_END);
     long taille_sig = ftell(fsig);
@@ -346,108 +309,6 @@ void generer_certificat(const char* id, const char* action) {
     printf("Demande '%s' générée dans %s.\n", action, filename);
 }
 
-
-// === Contacts ===
-
-void ajouter_contact(const char* id) {
-    if (nb_contacts >= MAX_CONTACTS) {
-        printf("Trop de contacts.\n");
-        return;
-    }
-    init_contact(&annuaire_contacts[nb_contacts], id);
-
-    printf("Nom : ");
-    fgets(annuaire_contacts[nb_contacts].nom, sizeof(annuaire_contacts[nb_contacts].nom), stdin);
-    annuaire_contacts[nb_contacts].nom[strcspn(annuaire_contacts[nb_contacts].nom, "\n")] = 0;
-
-    printf("Prénom : ");
-    fgets(annuaire_contacts[nb_contacts].prenom, sizeof(annuaire_contacts[nb_contacts].prenom), stdin);
-    annuaire_contacts[nb_contacts].prenom[strcspn(annuaire_contacts[nb_contacts].prenom, "\n")] = 0;
-
-    printf("Commentaire : ");
-    fgets(annuaire_contacts[nb_contacts].comment, sizeof(annuaire_contacts[nb_contacts].comment), stdin);
-    annuaire_contacts[nb_contacts].comment[strcspn(annuaire_contacts[nb_contacts].comment, "\n")] = 0;
-
-    printf("Type (perso / pro) : ");
-    fgets(annuaire_contacts[nb_contacts].type, sizeof(annuaire_contacts[nb_contacts].type), stdin);
-    annuaire_contacts[nb_contacts].type[strcspn(annuaire_contacts[nb_contacts].type, "\n")] = 0;
-
-    nb_contacts++;
-    printf("Contact '%s' ajouté.\n", id);
-}
-
-
-void lister_contacts(const char* id, const char* nom) {
-    for (int i = 0; i < nb_contacts; i++) {
-        if ((id && strcmp(annuaire_contacts[i].id, id) == 0) ||
-            (nom && strcmp(annuaire_contacts[i].nom, nom) == 0) ||
-            (!id && !nom)) {
-            printf("ID: %s | Nom: %s %s | Commentaire: %s\n",
-                   annuaire_contacts[i].id,
-                   annuaire_contacts[i].prenom,
-                   annuaire_contacts[i].nom,
-                   annuaire_contacts[i].comment);
-            for (int j = 0; j < annuaire_contacts[i].nb_clefs; j++) {
-                printf("  > Clé: %s (%s)\n",
-                    annuaire_contacts[i].clefs[j].id,
-                    annuaire_contacts[i].clefs[j].type);
-            }
-        }
-    }
-}
-
-
-void modifier_contact(const char* id) {
-    for (int i = 0; i < nb_contacts; i++) {
-        if (strcmp(annuaire_contacts[i].id, id) == 0) {
-            printf("Modification de %s\n", id);
-            printf("Nouveau commentaire : ");
-            fgets(annuaire_contacts[i].comment, sizeof(annuaire_contacts[i].comment), stdin);
-            annuaire_contacts[i].comment[strcspn(annuaire_contacts[i].comment, "\n")] = 0;
-            printf("Commentaire mis à jour.\n");
-            return;
-        }
-    }
-    printf("Contact non trouvé.\n");
-}
-
-void ajouter_cle_contact(const char* id) {
-    for (int i = 0; i < nb_contacts; i++) {
-        if (strcmp(annuaire_contacts[i].id, id) == 0 || strcmp(annuaire_contacts[i].nom, id) == 0) {
-            if (annuaire_contacts[i].nb_clefs >= MAX_CLEFS_CONTACT) {
-                printf("Trop de clefs pour ce contact.\n");
-                return;
-            }
-            printf("ID de la nouvelle clef : ");
-            fgets(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id, 100, stdin);
-            annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id[strcspn(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].id, "\n")] = 0;
-
-            printf("Type (crypt / sign) : ");
-            fgets(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type, 10, stdin);
-            annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type[strcspn(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].type, "\n")] = 0;
-
-            mpz_inits(annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].n, annuaire_contacts[i].clefs[annuaire_contacts[i].nb_clefs].e, NULL);
-            annuaire_contacts[i].nb_clefs++;
-
-            printf("Clé ajoutée.\n");
-            return;
-        }
-    }
-    printf("Contact non trouvé.\n");
-}
-
-void supprimer_contact(const char* id) {
-    for (int i = 0; i < nb_contacts; i++) {
-        if (strcmp(annuaire_contacts[i].id, id) == 0) {
-            liberer_contact(&annuaire_contacts[i]);
-            annuaire_contacts[i] = annuaire_contacts[--nb_contacts];
-            printf("Contact supprimé.\n");
-            return;
-        }
-    }
-    printf("Contact non trouvé.\n");
-}
-
 //############################################################################################################################################################
 // === Interpréteur ===
 //############################################################################################################################################################
@@ -483,15 +344,8 @@ void interpreteur() {
             fichier_base64_vers_binaire(filein, fileout);
         }
         else if (strcmp(cmd, "listkeys") == 0) {
-            char* id = strtok(NULL, " ");
-            if (id) {
-                Clef* c = chercher_clef(id);
-                if (c) afficher_clef(c, "all");
-                else printf("Clé non trouvée.\n");
-            } else {
-                for (int i = 0; i < nb_clefs; i++) {
-                    printf("%s (%s)\n", annuaire[i].id, annuaire[i].type);
-                }
+            for (int i = 0; i < nb_clefs; i++) {
+                printf("%s (%s)\n", annuaire[i].id, annuaire[i].type);
             }
         }
         else if (strcmp(cmd, "show") == 0) {
@@ -514,11 +368,14 @@ void interpreteur() {
             char* id = strtok(NULL, " ");
             char* filename = strtok(NULL, " ");
             if (!id || !filename) { printf("Usage: savepub <keyid> <filename>\n"); continue; }
+
             Clef* c = chercher_clef(id);
             if (!c) { printf("Clé non trouvée.\n"); continue; }
+            // Convetit la clef publique en base64
             char* pub_b64 = exporter_cle_publique_base64(c->n, c->e);
             FILE* f = fopen(filename, "w");
             if (!f) { perror("Erreur écriture"); free(pub_b64); continue; }
+            // écrit la clef convertie dans le fichier
             fprintf(f, "%s\n", pub_b64);
             fclose(f);
             free(pub_b64);
@@ -537,6 +394,7 @@ void interpreteur() {
             }
             for (int i = 0; i < nb_contacts; i++) {
                 for (int j = 0; j < annuaire_contacts[i].nb_clefs; j++) {
+                    // regarde les clefs de tout les contacts
                     if (strcmp(annuaire_contacts[i].clefs[j].id, id) == 0) {
                         mpz_clears(annuaire_contacts[i].clefs[j].n, annuaire_contacts[i].clefs[j].e, NULL);
                         annuaire_contacts[i].clefs[j] = annuaire_contacts[i].clefs[--annuaire_contacts[i].nb_clefs];
@@ -647,8 +505,9 @@ void interpreteur() {
 }
 
 int main() {
-    printf("--- Interpreteur Phase 3 RSA ---\n");
+    printf("--- Interpréteur RSA Phase 3 ---\n");
     afficher_aide();
     interpreteur();
     return 0;
 }
+
