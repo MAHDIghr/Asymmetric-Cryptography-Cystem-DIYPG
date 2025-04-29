@@ -1,3 +1,7 @@
+/// \file clef.c
+/// \author Oliver SEARLE
+/// \date avril 2025
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,4 +40,40 @@ void afficher_clef(Clef *c, const char* quoi) {
     if (strcmp(quoi, "priv") == 0 || strcmp(quoi, "all") == 0) {
         gmp_printf("d: %Zd\n", c->d);
     }
+}
+
+//#####################################################" CHargement clés"
+
+void charger_cle_publique(const char *fichier, mpz_t e, mpz_t n) {
+    FILE *fp = fopen(fichier, "r");
+    if (!fp) {
+        perror("Erreur ouverture fichier clé publique");
+        exit(EXIT_FAILURE);
+    }
+    char ligne[1024];
+    while (fgets(ligne, sizeof(ligne), fp)) {
+        if (ligne[0] == 'e') {
+            mpz_set_str(e, ligne + 2, 10);  // sauter "e="
+        } else if (ligne[0] == 'n') {
+            mpz_set_str(n, ligne + 2, 10);  // sauter "n="
+        }
+    }
+    fclose(fp);
+}
+
+void charger_cle_privee(const char *fichier, mpz_t d, mpz_t n) {
+    FILE *fp = fopen(fichier, "r");
+    if (!fp) {
+        perror("Erreur ouverture fichier clé privée");
+        exit(EXIT_FAILURE);
+    }
+    char ligne[1024];
+    while (fgets(ligne, sizeof(ligne), fp)) {
+        if (ligne[0] == 'd') {
+            mpz_set_str(d, ligne + 2, 10);  // sauter "d="
+        } else if (ligne[0] == 'n') {
+            mpz_set_str(n, ligne + 2, 10);  // sauter "n="
+        }
+    }
+    fclose(fp);
 }
