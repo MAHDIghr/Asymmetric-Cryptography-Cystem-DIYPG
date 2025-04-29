@@ -112,8 +112,8 @@ int main() {
     remove("data/input/test_in.txt");
     remove("data/output/test_chiffre.txt");
     remove("data/output/test_out.txt");
-    //remove("data/output/base64.txt");
-    //remove("data/output/binary_copy.txt");
+    remove("data/output/base64.txt");
+    remove("data/output/binary_copy.txt");
 
     printf("Tous les tests terminés.\n");
 
