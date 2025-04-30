@@ -6,17 +6,16 @@
 #include "../../include/phase1.h"
 
 void puissance_mod_n_gmp(mpz_t res, uint64_t a, uint64_t e, uint64_t n) {
+    /// \brief Initialiser les variables GMP, (base a, exposant e,modulo n)
+    // calcul de res = (base^exposant) mod modulo
     mpz_t base, exposant, modulo;
 
-    // Initialiser les variables GMP
-    mpz_init_set_ui(base, a);      // base = a
-    mpz_init_set_ui(exposant, e);  // exposant = e
-    mpz_init_set_ui(modulo, n);    // modulo = n
+    mpz_init_set_ui(base, a);
+    mpz_init_set_ui(exposant, e);
+    mpz_init_set_ui(modulo, n);    
 
-    // Calcul de res = (base^exposant) mod modulo
     mpz_powm(res, base, exposant, modulo);
 
-    // Libérer la mémoire
     mpz_clear(base);
     mpz_clear(exposant);
     mpz_clear(modulo);
@@ -74,7 +73,6 @@ void rsa_chiffrer_fichier(const char* chemin_in, const char* chemin_out, const m
     fclose(fout);
 }
 
-
 //C
 
 void rsa_dechiffrer_fichier(const char* chemin_in, const char* chemin_out, const mpz_t d, const mpz_t n) {
@@ -118,11 +116,10 @@ void rsa_dechiffrer_fichier(const char* chemin_in, const char* chemin_out, const
     fclose(fout);
 }
 
-
 //D
 
 char* exporter_cle_publique_base64(const mpz_t n, const mpz_t e) {
-    /// \brief Convertit un clef en Base64
+    /// \brief Convertit un clef en binaire puis en Base64
     size_t n_size, e_size;
     uint8_t* n_bin = (uint8_t*) mpz_export(NULL, &n_size, 1, 1, 0, 0, n);
     uint8_t* e_bin = (uint8_t*) mpz_export(NULL, &e_size, 1, 1, 0, 0, e);
