@@ -246,7 +246,7 @@ void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
     fread(buffer, 1, taille, fin);
     fclose(fin);
 
-    // === HASHAGE SHA-256 ===
+    // HASHAGE SHA-256
     BYTE hash_bin[SHA256_BLOCK_SIZE];
     SHA256_CTX ctx;
     sha256_init(&ctx);
@@ -361,9 +361,6 @@ void verifier_signature(const char* filein, const char* filesign, Clef* clef) {
 
     mpz_clears(hash_original, signature, verif, NULL);
 }
-
-
-
 
 // === Certificat ===
 
