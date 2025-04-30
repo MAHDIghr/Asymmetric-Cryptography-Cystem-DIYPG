@@ -12,6 +12,7 @@ Clef annuaire[MAX_CLEFS];
 int nb_clefs = 0;
 
 void init_clef(Clef *c, const char *id, const char *type) {
+    /// \brief Initialise la clef
     strncpy(c->id, id, sizeof(c->id));
     strncpy(c->type, type, sizeof(c->type));
     mpz_inits(c->n, c->e, c->d, NULL);
@@ -23,6 +24,7 @@ void liberer_clef(Clef *c) {
 }
 
 Clef* chercher_clef(const char* id) {
+    /// \brief Parcours toutes les clefs retourne la clef si trouvée sinon NULL
     for (int i = 0; i < nb_clefs; i++) {
         if (strcmp(annuaire[i].id, id) == 0)
             return &annuaire[i];
