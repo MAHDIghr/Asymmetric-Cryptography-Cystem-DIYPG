@@ -3,7 +3,7 @@
 #include "../../include/rsa_tools.h"
 #include "../../include/other_base64.h"
 #include <stdint.h>
-
+#include <inttypes.h>
 
 /*===========================================================================================
                 Phase 1.0 :                
