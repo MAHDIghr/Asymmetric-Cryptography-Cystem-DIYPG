@@ -6,14 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmp.h>
-#include "../include/phase2.h"
 #include "../include/rsa_tools.h"
-#include "../include/phase1.h"
 #include "../include/rsa_common_header.h"
 #include "../include/phase2.h"
 #include "../include/contact.h"
 #include "../include/clef.h"
-#include "../include/sha256.h"
+#include "../include/sign.h"
+
 
 #define BUFFER_SIZE 512
 
@@ -26,8 +25,8 @@ void afficher_aide() {
     printf("  rmkeys <keyid>\n");
     printf("  crypt <filein> <fileout> <keyid>\n");
     printf("  uncrypt <filein> <fileout> <keyid>\n");
-    printf("  signtext <filein> <keyid> <fileout>\n");
-    printf("  verifysign <filein> <filesig> <keyid>\n");
+    printf("  signtext <filein> <fileout> <keysign> <keycrypt> \n");
+    printf("  verifysign <filein> <filsig> <keysign> <keycrypt> \n");
     printf("  save [filename] <keyid> \n");
     printf("  load [filename] <keyid>\n");
     printf("  savepub <keyid> <filename>\n");
@@ -230,138 +229,6 @@ void charger_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
     printf("Fichier sécurisé chargé depuis %s\n", source);
 }
 
-
-// === Signature ===
-
-void signer_fichier(const char* filein, const char* fileout, Clef* clef) {
-    FILE *fin = fopen(filein, "rb");
-    FILE *fout = fopen(fileout, "w");
-    if (!fin || !fout) { perror("Erreur fichiers"); return; }
-
-    fseek(fin, 0, SEEK_END);
-    long taille = ftell(fin);
-    rewind(fin);
-
-    unsigned char *buffer = malloc(taille);
-    fread(buffer, 1, taille, fin);
-    fclose(fin);
-
-    // HASHAGE SHA-256
-    BYTE hash_bin[SHA256_BLOCK_SIZE];
-    SHA256_CTX ctx;
-    sha256_init(&ctx);
-    sha256_update(&ctx, buffer, taille);
-    sha256_final(&ctx, hash_bin);
-
-    // Conversion du hash en mpz_t
-    mpz_t hash_mpz, signature;
-    mpz_inits(hash_mpz, signature, NULL);
-    mpz_import(hash_mpz, SHA256_BLOCK_SIZE, 1, 1, 0, 0, hash_bin);
-
-    rsa_dechiffrer_bloc(signature, hash_mpz, clef->d, clef->n);
-
-    size_t size;
-    uint8_t *bin = (uint8_t *) mpz_export(NULL, &size, 1, 1, 0, 0, signature);
-
-    char* base64_encoded = convert_binary_to_base64(bin, size);
-    fprintf(fout, "%s\n", base64_encoded);
-
-    free(buffer);
-    free(bin);
-    free(base64_encoded);
-    mpz_clears(hash_mpz, signature, NULL);
-    fclose(fout);
-    printf("Signature écrite dans %s.\n", fileout);
-}
-
-
-void verifier_signature(const char* filein, const char* filesign, Clef* clef) {
-    FILE *fin = fopen(filein, "rb");
-    FILE *fsig = fopen(filesign, "r");
-    if (!fin || !fsig) {
-        perror("Erreur fichiers");
-        if (fin) fclose(fin);
-        if (fsig) fclose(fsig);
-        return;
-    }
-
-    // Lecture du fichier original
-    fseek(fin, 0, SEEK_END);
-    long taille_ori = ftell(fin);
-    rewind(fin);
-    if (taille_ori <= 0) {
-        fprintf(stderr, "Erreur : fichier d'entrée vide ou invalide.\n");
-        fclose(fin); fclose(fsig);
-        return;
-    }
-
-    unsigned char *buffer_ori = malloc(taille_ori);
-    if (!buffer_ori) {
-        perror("Erreur malloc buffer_ori");
-        fclose(fin); fclose(fsig);
-        return;
-    }
-    fread(buffer_ori, 1, taille_ori, fin);
-    fclose(fin);
-
-    // Lecture du fichier de signature
-    fseek(fsig, 0, SEEK_END);
-    long taille_sig = ftell(fsig);
-    rewind(fsig);
-    if (taille_sig <= 0) {
-        fprintf(stderr, "Erreur : fichier de signature vide ou invalide.\n");
-        free(buffer_ori); fclose(fsig);
-        return;
-    }
-
-    char *buffer_sig = malloc(taille_sig + 1);
-    if (!buffer_sig) {
-        perror("Erreur malloc buffer_sig");
-        free(buffer_ori); fclose(fsig);
-        return;
-    }
-
-    fread(buffer_sig, 1, taille_sig, fsig);
-    buffer_sig[taille_sig] = '\0';
-    fclose(fsig);
-
-    // Décodage Base64
-    size_t decoded_size = 0;
-    unsigned char *decoded = convert_base64_to_binary(buffer_sig, &decoded_size);
-    free(buffer_sig);
-
-    if (!decoded || decoded_size == 0) {
-        fprintf(stderr, "Erreur : signature décodée invalide.\n");
-        free(buffer_ori);
-        free(decoded);  // même si NULL, free est safe
-        return;
-    }
-
-    // Initialisation et hash du fichier original
-    mpz_t hash_original, signature, verif;
-    mpz_inits(hash_original, signature, verif, NULL);
-
-    BYTE hash_bin[SHA256_BLOCK_SIZE];
-    SHA256_CTX ctx;
-    sha256_init(&ctx);
-    sha256_update(&ctx, buffer_ori, taille_ori);
-    sha256_final(&ctx, hash_bin);
-    free(buffer_ori);
-
-    mpz_import(hash_original, SHA256_BLOCK_SIZE, 1, 1, 0, 0, hash_bin);
-    mpz_import(signature, decoded_size, 1, 1, 0, 0, decoded);
-    free(decoded);
-
-    rsa_chiffrer_bloc(verif, signature, clef->e, clef->n);
-
-    if (mpz_cmp(hash_original, verif) == 0)
-        printf("Signature VALIDE.\n");
-    else
-        printf("Signature INVALIDE.\n");
-
-    mpz_clears(hash_original, signature, verif, NULL);
-}
-
 // === Certificat ===
 
 void generer_certificat(const char* id, const char* action) {
@@ -533,24 +400,31 @@ void interpreteur() {
         }
         else if (strcmp(cmd, "signtext") == 0) {
             char* filein = strtok(NULL, " ");
-            char* keyid = strtok(NULL, " ");
             char* fileout = strtok(NULL, " ");
-            if (!filein || !keyid || !fileout) { printf("Usage: signtext <filein> <keyid> <fileout>\n"); continue; }
-
-            Clef* c = chercher_clef(keyid);
-            if (c) signer_fichier(filein, fileout, c);
-            else printf("Clé non trouvée.\n");
-        }
+            char* keysign = strtok(NULL, " ");
+            char* keycrypt = strtok(NULL, " ");
+            if (!filein || !fileout || !keysign || !keycrypt){
+                printf("Usage: signtext <filein> <fileout> <keysign> <keycrypt>\n");
+                continue;
+            }
+            signer_fichier(filein, fileout,keysign,keycrypt);
+        }        
         else if (strcmp(cmd, "verifysign") == 0) {
             char* filein = strtok(NULL, " ");
             char* filesign = strtok(NULL, " ");
-            char* keyid = strtok(NULL, " ");
-            if (!filein || !filesign || !keyid) { printf("Usage: verifysign <filein> <filesign> <keyid>\n"); continue; }
-
-            Clef* c = chercher_clef(keyid);
-            if (c) verifier_signature(filein, filesign, c);
-            else printf("Clé non trouvée.\n");
-        }
+            char* keysign = strtok(NULL, " ");
+            char* keycrypt = strtok(NULL, " ");
+            if (!filein || !filesign || !keysign || !keycrypt) {
+                printf("Usage: verifysign <filein> <filesign> <keysign> <keycrypt>\n");
+                continue;
+            }
+        
+            int valid = verifier_signature(filein, filesign, keysign,keycrypt);
+            if (valid)
+                printf("Signature VALIDE.\n");
+            else
+                printf("Signature INVALIDE.\n");
+        }        
         else if (strcmp(cmd, "certify") == 0) {
             char* id = strtok(NULL, " ");
             if (!id) { printf("Usage: certify <keyid>\n"); continue; }

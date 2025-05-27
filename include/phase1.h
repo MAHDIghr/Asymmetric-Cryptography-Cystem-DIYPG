@@ -7,7 +7,7 @@
 #include "rsa_common_header.h"
 #include <stdint.h>
 
-void printKey(const rsaKey_t *key);
+void print_rsa_key(const rsaKey_t *key, const char *type);
 
 void printKeyPair(const keyPair_t *keyPair);
 

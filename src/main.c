@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmp.h>
-#include "phase1.h"
-#include "phase2.h"
-#include "rsa_tools.h"
-#include "other_base64.h"
+#include "../include/phase1.h"
+#include "../include/phase2.h"
+#include "../include/rsa_tools.h"
 
 #define TEST_FILE "test_data.txt"
 #define ENCRYPTED_FILE "encrypted.bin"

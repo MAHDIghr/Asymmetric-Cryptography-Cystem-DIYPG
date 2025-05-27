@@ -20,8 +20,6 @@
 #include <stdio.h>
 #include <memory.h>
 #include <string.h>
-#include <stdlib.h>
-//#include "sha256.h"
 #include "../../include/sha256_utils.h"
 
 /*********************** FUNCTION DEFINITIONS ***********************/
