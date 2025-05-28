@@ -20,7 +20,8 @@ Ce livrable contient l'implémentation de la phase 1.0 du projet RSA, comprenant
    - Ces tests permettent de vérifier le bon fonctionnement des fonctions de génération et d'affichage.
 
 4. Paramétrage de MAX_PRIME
-   - La constante `MAX_PRIME` est définie dans le fichier `rsa_header.h` à la valeur 10000.
+   - La constante `MAX_PRIME` est définie dans le fichier `rsa_header.h`
+ à la valeur 10000.
    - Cette valeur peut être modifiée pour explorer les limites de la capacité des uint64_t et observer les dépassements éventuels.
 
 Bilan
@@ -28,13 +29,11 @@ Bilan
 - **Valeur de MAX_PRIME** : Pour les tests, MAX_PRIME est initialement fixée à 10000. Cela garantit que les opérations restent dans les limites d'un uint64_t sans nécessiter l'utilisation de bibliothèques comme GMP.
 - **Exhaustivité des tests** : Les tests réalisés via `test_keys.c` couvrent la génération de clés RSA ainsi que l'affichage lisible des résultats. D'autres tests unitaires peuvent être ajoutés pour vérifier individuellement chaque fonction (primalité, décomposition, exponentiation modulaire, etc.).
 
-Ce livrable permet de valider la phase 1.0 du projet, en mettant en œuvre la génération des clés RSA et en fournissant un affichage clair pour faciliter le débogage et la vérification des résultats.
+
 
 
 ======================
 # Phase 5 –Gestion décentralisée des clés via Blockchain
-
-Ce README décrit la mise en place et l’utilisation de la phase 5 du projet : une blockchain Python pour gérer la diffusion et la révocation de clés RSA.
 
 ---
 
