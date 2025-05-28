@@ -3,7 +3,7 @@
 - Chenouf Malaq
 - Gherbi Kamel Mahdi 
 
-**Prérequis** : `make`, `gcc`, `libgmp-dev`
+**Prérequis** : `make`, `gcc` , **GMP** (`libgmp-dev`)
 
 ## Compilation
 ```bash
