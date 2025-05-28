@@ -3,7 +3,7 @@ Searle Oliver
 Chenouf Malaq
 Gherbi Kamel Mahdi 
 
-## Compilation
+# Compilation
 ```bash
 make all
 ./bin/interprete
