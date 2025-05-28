@@ -43,39 +43,3 @@ void afficher_clef(Clef *c, const char* quoi) {
         gmp_printf("d: %Zd\n", c->d);
     }
 }
-
-//#####################################################" CHargement clés"
-
-void charger_cle_publique(const char *fichier, mpz_t e, mpz_t n) {
-    FILE *fp = fopen(fichier, "r");
-    if (!fp) {
-        perror("Erreur ouverture fichier clé publique");
-        exit(EXIT_FAILURE);
-    }
-    char ligne[1024];
-    while (fgets(ligne, sizeof(ligne), fp)) {
-        if (ligne[0] == 'e') {
-            mpz_set_str(e, ligne + 2, 10);  // sauter "e="
-        } else if (ligne[0] == 'n') {
-            mpz_set_str(n, ligne + 2, 10);  // sauter "n="
-        }
-    }
-    fclose(fp);
-}
-
-void charger_cle_privee(const char *fichier, mpz_t d, mpz_t n) {
-    FILE *fp = fopen(fichier, "r");
-    if (!fp) {
-        perror("Erreur ouverture fichier clé privée");
-        exit(EXIT_FAILURE);
-    }
-    char ligne[1024];
-    while (fgets(ligne, sizeof(ligne), fp)) {
-        if (ligne[0] == 'd') {
-            mpz_set_str(d, ligne + 2, 10);  // sauter "d="
-        } else if (ligne[0] == 'n') {
-            mpz_set_str(n, ligne + 2, 10);  // sauter "n="
-        }
-    }
-    fclose(fp);
-}

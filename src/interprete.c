@@ -16,7 +16,9 @@
 
 #define BUFFER_SIZE 512
 
+// ############
 // === Aide ===
+// ############
 
 void afficher_aide() {
     printf("\nCommandes disponibles :\n");
@@ -43,56 +45,9 @@ void afficher_aide() {
     printf("  quit\n\n");
 }
 
-// === Fonctions utilitaires ===
-
-void sauvegarder_clefs(const char* filename) {
-    FILE *f = fopen(filename, "w");
-    if (!f) { perror("Erreur sauvegarde"); return; }
-    for (int i = 0; i < nb_clefs; i++) {
-        fprintf(f, "id=%s\n", annuaire[i].id);
-        fprintf(f, "type=%s\n", annuaire[i].type);
-        gmp_fprintf(f, "n=%Zd\n", annuaire[i].n);
-        gmp_fprintf(f, "e=%Zd\n", annuaire[i].e);
-        gmp_fprintf(f, "d=%Zd\n", annuaire[i].d);
-    }
-    fclose(f);
-    printf("Clés sauvegardées dans %s.\n", filename);
-}
-
-void charger_clefs(const char* filename) {
-    FILE *f = fopen(filename, "r");
-    if (!f) { perror("Erreur chargement"); return; }
-
-    char ligne[1024];
-    Clef clef_temp;
-    int en_creation = 0;
-
-    while (fgets(ligne, sizeof(ligne), f)) {
-        if (strncmp(ligne, "id=", 3) == 0) {
-            if (en_creation) annuaire[nb_clefs++] = clef_temp;
-            init_clef(&clef_temp, ligne+3, "");
-            clef_temp.id[strcspn(clef_temp.id, "\n")] = 0;
-            en_creation = 1;
-        }
-        else if (strncmp(ligne, "type=", 5) == 0) {
-            strncpy(clef_temp.type, ligne+5, sizeof(clef_temp.type));
-            clef_temp.type[strcspn(clef_temp.type, "\n")] = 0;
-        }
-        else if (strncmp(ligne, "n=", 2) == 0) {
-            mpz_set_str(clef_temp.n, ligne+2, 10);
-        }
-        else if (strncmp(ligne, "e=", 2) == 0) {
-            mpz_set_str(clef_temp.e, ligne+2, 10);
-        }
-        else if (strncmp(ligne, "d=", 2) == 0) {
-            mpz_set_str(clef_temp.d, ligne+2, 10);
-        }
-    }
-    if (en_creation) annuaire[nb_clefs++] = clef_temp;
-    fclose(f);
-    printf("Clés chargées depuis %s.\n", filename);
-}
-
+// ####################################
+// === Sauvegarde clefs et Contacts ===
+// ####################################
 
 void sauvegarder_clefs_contacts(const char* filename) {
     /// \brief Sauvegarde dans un fichier (filename ou save.txt par defaut) toutes les clefs et tout les contacts. 
@@ -125,6 +80,7 @@ void sauvegarder_clefs_contacts(const char* filename) {
 }
 
 void sauvegarder_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
+    /// \brief Sauvegarde dans un fichier (filename ou save.txt par defaut) toutes les clefs et tout les contacts et le crypte avec la clef.
     const char* temp = "temp.txt";
     const char* final_file = filename ? filename : "save.enc";
 
@@ -215,6 +171,7 @@ void charger_clefs_contacts(const char* filename) {
 }
 
 void charger_clefs_contacts_secure(const char* filename, Clef* clef_crypt) {
+    /// \brief Decrypte le fichier (filename ou save.txt par defaut) et charge toutes les clefs et les contacts.
     const char* temp = "temp.txt";
     const char* source = filename ? filename : "save.enc";
 

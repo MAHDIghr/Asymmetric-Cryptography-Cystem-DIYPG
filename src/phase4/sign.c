@@ -1,10 +1,11 @@
 /// \file sign.c
 /// \author Oliver SEARLE
-/// \date avril 2025
+/// \date mai 2025
 
 #include "../../include/sign.h"
 
 int hash_fichier_sha256(const char *chemin_fichier, BYTE hash[32]) {
+    /// \brief hash le fichier 
     FILE *fichier = fopen(chemin_fichier, "rb");
     if (!fichier) {
         perror("Erreur à l'ouverture du fichier");
@@ -26,6 +27,7 @@ int hash_fichier_sha256(const char *chemin_fichier, BYTE hash[32]) {
 }
 
 void chiffrer_hash(mpz_t chiffré, const BYTE hash[32], Clef* clef_publique) {
+    /// \brief Chiffre avec la clé de chiffrement le hash crée.
     mpz_t m;
     mpz_init(m);
 
@@ -42,11 +44,12 @@ void chiffrer_hash(mpz_t chiffré, const BYTE hash[32], Clef* clef_publique) {
 }
 
 void dechiffrer_hash(mpz_t hash_dechiffre, mpz_t hash_chiffre, Clef* clef_privee) {
-    // hash_dechiffre = (hash_chiffre)^d mod n
+    /// \brief hash_dechiffre = (hash_chiffre)^d mod n
     mpz_powm(hash_dechiffre, hash_chiffre, clef_privee->d, clef_privee->n);
 }
 
 void signer_hash(mpz_t signature, const BYTE hash[32], Clef *clef_privee) {
+    /// \brief signer le hash chiffré ou non
     mpz_t m;
     mpz_init(m);
 
@@ -63,6 +66,7 @@ void signer_hash(mpz_t signature, const BYTE hash[32], Clef *clef_privee) {
 }
 
 void signer_fichier(const char* filein, const char* fileout, const char* keyid_sign, const char* keyid_chiffre) {
+    /// \brief Fonction englobante qui effecte tout les traitements de hashage, chiffrement et signature.
     Clef* clef_signature = chercher_clef(keyid_sign);
     Clef* clef_chiffrement = chercher_clef(keyid_chiffre);
 
@@ -103,6 +107,7 @@ void signer_fichier(const char* filein, const char* fileout, const char* keyid_s
 }
 
 int verifier_signature(const char* filein, const char* filesign, const char* keyid_sign, const char* keyid_crypt) {
+    /// \brief compare le fichier filein hashé avec filesign après déchiffrement
     Clef* clef_verif = chercher_clef(keyid_sign);
     Clef* clef_dechiffre = chercher_clef(keyid_crypt);
 
@@ -154,10 +159,9 @@ int verifier_signature(const char* filein, const char* filesign, const char* key
 
     int valide = (mpz_cmp(m_attendu, hash_dechiffre) == 0);
 
-    // Debug
-    printf("Hash attendu (réduit): ");
+    printf("Hash attendu   : ");
     gmp_printf("%Zx\n", m_attendu);
-    printf("Hash déchiffré       : ");
+    printf("Hash déchiffré : ");
     gmp_printf("%Zx\n", hash_dechiffre);
 
     mpz_clears(signature, hash_chiffre, hash_calcule, hash_dechiffre, m_attendu, NULL);
