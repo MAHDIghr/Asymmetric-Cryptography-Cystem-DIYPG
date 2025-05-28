@@ -1,12 +1,12 @@
 **Membres de l’équipe 04 :**
-Searle Oliver
-Chenouf Malaq
-Gherbi Kamel Mahdi 
+- Searle Oliver
+- Chenouf Malaq
+- Gherbi Kamel Mahdi 
 
-Compilation
-bash
-make all
-./bin/interprete
+# Compilation
+- bash
+- make all
+- ./bin/interprete
 
 
 # Asymmetric-Cryptography-Cystem-DIYPG
