@@ -4,7 +4,6 @@
 - Gherbi Kamel Mahdi 
 
 # Compilation
-- bash
 - make all
 - ./bin/interprete
 
