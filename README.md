@@ -4,9 +4,9 @@ Chenouf Malaq
 Gherbi Kamel Mahdi 
 
 Compilation
-```bash
+bash
 make all
-./bin/interprete```
+./bin/interprete
 
 
 # Asymmetric-Cryptography-Cystem-DIYPG
