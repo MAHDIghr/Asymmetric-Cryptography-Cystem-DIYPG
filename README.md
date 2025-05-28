@@ -3,9 +3,22 @@
 - Chenouf Malaq
 - Gherbi Kamel Mahdi 
 
-# Compilation
-- make all
-- ./bin/interprete
+**Prérequis** : `make`, `gcc`, `libgmp-dev`
+
+## Compilation
+```bash
+make all
+```
+
+## Exécution
+```bash
+./bin/interprete
+```
+
+## Librairies à installer
+```bash
+sudo apt-get install libgmp-dev
+```
 
 
 # Asymmetric-Cryptography-Cystem-DIYPG
