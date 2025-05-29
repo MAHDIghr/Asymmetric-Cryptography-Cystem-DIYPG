@@ -24,6 +24,7 @@ Chaque phase dispose de son propre sous-dossier dans `src/`, d’un Makefile glo
 
 
  ## 3. Organisation du dépôt
+ ---
 /include/        # En-têtes communs et spécifiques
 /src/
   core/          # Modules d’arithmétique et utilitaires
@@ -36,7 +37,7 @@ Chaque phase dispose de son propre sous-dossier dans `src/`, d’un Makefile glo
 /bin/            # Exécutables générés (main, interprete, tests)
 /Makefile        # Compilation globale et gestion des tests
 /README.md       # Documentation du projet
-
+---
 ## 4. Installation & Compilation
 Cloner le dépôt puis compiler l’ensemble :
 ```bash
@@ -47,7 +48,7 @@ make
 
 Tous les exécutables (y compris main, interprete et les tests) seront disponibles dans bin/.
 
-5. Utilisation
+## 5. Utilisation
 
 ### Phase 1 – RSA basique & Base64
 
@@ -74,6 +75,8 @@ Bilan
 
 
 ### 5.2 Phase 2 – chiffrement par blocs (GMP)
+Traite les fichiers 4 octets à la fois en utilisant GMP pour les opérations modulo.
+
 ```bash
 # Générer une paire de clés (1024 bits)
 ./bin/main genkey --phase 2 --bits 1024 --out pub.key priv.key
@@ -110,7 +113,31 @@ rmcontact <id>            # supprimer contact
 certify/revoke <id>       # demande certif/révoc
 quit                      # quitter
 
+## Phase 4 – Signatures SHA-256 + RSA
 
+Cette phase ajoute la possibilité de signer et de vérifier l’intégrité des fichiers en combinant un hachage SHA-256 et une clé RSA.
+
+### Fonctions principales
+- `hash_fichier_sha256` : calcule le digest 32 octets d’un fichier  
+- `signer_hash` / `chiffrer_hash` : conversion du hash en mpz_t et chiffrement  
+- `signer_fichier` : hache, chiffre (optionnel) et signe le hash pour produire un fichier `.sig`  
+- `verifier_signature` : déchiffre la signature, recalcule le hash et compare
+
+### Exemples CLI (via `main`)
+```bash
+# Signer un document
+./bin/main sign \
+  --input document.txt \
+  --output document.sig \
+  --keysign priv.key \
+  --keycrypt pub.key
+
+# Vérifier une signature
+./bin/main verify \
+  --input document.txt \
+  --sig document.sig \
+  --keysign pub.key \
+  --keycrypt priv.key
 
 # Phase 5 –Gestion décentralisée des clés via Blockchain
 
