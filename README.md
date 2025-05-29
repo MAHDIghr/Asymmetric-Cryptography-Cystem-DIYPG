@@ -68,7 +68,7 @@ Pour un cryptage RSA en production, les nombres premiers devraient être beaucou
  à la valeur 10000.
    - Cette valeur peut être modifiée pour explorer les limites de la capacité des uint64_t et observer les dépassements éventuels.
 
-Bilan
+###Bilan
 -----
 - **Valeur de MAX_PRIME** : Pour les tests, MAX_PRIME est initialement fixée à 10000. Cela garantit que les opérations restent dans les limites d'un uint64_t sans nécessiter l'utilisation de bibliothèques comme GMP.
 - **Exhaustivité des tests** : Les tests réalisés via `test_keys.c` couvrent la génération de clés RSA ainsi que l'affichage lisible des résultats. D'autres tests unitaires peuvent être ajoutés pour vérifier individuellement chaque fonction (primalité, décomposition, exponentiation modulaire, etc.).
@@ -91,7 +91,7 @@ Traite les fichiers 4 octets à la fois en utilisant GMP pour les opérations mo
 ./bin/main b64-2bin message.b64 message2.enc
 ```
 
-### Phase 3 – CLI & annuaire (bin/interprete)
+#### Phase 3 – CLI & annuaire (bin/interprete)
 ```
 newkeys <id> <type>       # créer clé
 listkeys [id] [pub|priv]  # lister
@@ -113,17 +113,17 @@ rmcontact <id>            # supprimer contact
 certify/revoke <id>       # demande certif/révoc
 quit                      # quitter
 ```
-## Phase 4 – Signatures SHA-256 + RSA
+### 5.4 Phase 4 – Signatures SHA-256 + RSA
 
 Cette phase ajoute la possibilité de signer et de vérifier l’intégrité des fichiers en combinant un hachage SHA-256 et une clé RSA.
 
-### Fonctions principales
+#### Fonctions principales
 - `hash_fichier_sha256` : calcule le digest 32 octets d’un fichier  
 - `signer_hash` / `chiffrer_hash` : conversion du hash en mpz_t et chiffrement  
 - `signer_fichier` : hache, chiffre (optionnel) et signe le hash pour produire un fichier `.sig`  
 - `verifier_signature` : déchiffre la signature, recalcule le hash et compare
 
-### Exemples CLI (via `main`)
+#### Exemples CLI (via `main`)
 ```bash
 # Signer un document
 ./bin/main sign \
@@ -138,8 +138,8 @@ Cette phase ajoute la possibilité de signer et de vérifier l’intégrité des
   --sig document.sig \
   --keysign pub.key \
   --keycrypt priv.key
-
-# Phase 5 –Gestion décentralisée des clés via Blockchain
+```
+### 5.5 Phase 5 –Gestion décentralisée des clés via Blockchain
 
 ---
 
