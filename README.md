@@ -24,7 +24,7 @@ Chaque phase dispose de son propre sous-dossier dans `src/`, d’un Makefile glo
 
 
  ## 3. Organisation du dépôt
- ---
+```
 /include/        # En-têtes communs et spécifiques
 /src/
   core/          # Modules d’arithmétique et utilitaires
@@ -37,7 +37,7 @@ Chaque phase dispose de son propre sous-dossier dans `src/`, d’un Makefile glo
 /bin/            # Exécutables générés (main, interprete, tests)
 /Makefile        # Compilation globale et gestion des tests
 /README.md       # Documentation du projet
----
+```
 ## 4. Installation & Compilation
 Cloner le dépôt puis compiler l’ensemble :
 ```bash
@@ -50,7 +50,7 @@ Tous les exécutables (y compris main, interprete et les tests) seront disponibl
 
 ## 5. Utilisation
 
-### Phase 1 – RSA basique & Base64
+### 5.1 Phase 1 – RSA basique & Base64
 
 Phase 1.0 :
 Pour un cryptage RSA en production, les nombres premiers devraient être beaucoup plus grands. Toutefois, avec uint64_t, on est limité par 2^64 - 1, ce qui est insuffisant pour un RSA robuste. C'est pourquoi, pour des tests pédagogiques, MAX_PRIME = 10000 est utilisé pour simplifier et garantir le bon fonctionnement des algorithmes.
@@ -89,10 +89,10 @@ Traite les fichiers 4 octets à la fois en utilisant GMP pour les opérations mo
 # Conversion binaire ↔ Base64
 ./bin/main bin-2b64 message.enc message.b64
 ./bin/main b64-2bin message.b64 message2.enc
-
+```
 
 ### Phase 3 – CLI & annuaire (bin/interprete)
-
+```
 newkeys <id> <type>       # créer clé
 listkeys [id] [pub|priv]  # lister
 rmkeys <id>               # supprimer
@@ -112,7 +112,7 @@ addkeys <id/nom>          # ajouter clé contact
 rmcontact <id>            # supprimer contact
 certify/revoke <id>       # demande certif/révoc
 quit                      # quitter
-
+```
 ## Phase 4 – Signatures SHA-256 + RSA
 
 Cette phase ajoute la possibilité de signer et de vérifier l’intégrité des fichiers en combinant un hachage SHA-256 et une clé RSA.
