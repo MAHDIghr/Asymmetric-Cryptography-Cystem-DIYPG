@@ -43,6 +43,7 @@ Cloner le dépôt puis compiler l’ensemble :
 git clone <url-du-projet>
 cd <projet>
 make 
+```
 
 Tous les exécutables (y compris main, interprete et les tests) seront disponibles dans bin/.
 
