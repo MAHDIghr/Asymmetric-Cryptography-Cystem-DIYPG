@@ -68,7 +68,6 @@ Pour un cryptage RSA en production, les nombres premiers devraient être beaucou
  à la valeur 10000.
    - Cette valeur peut être modifiée pour explorer les limites de la capacité des uint64_t et observer les dépassements éventuels.
 
-###Bilan
 -----
 - **Valeur de MAX_PRIME** : Pour les tests, MAX_PRIME est initialement fixée à 10000. Cela garantit que les opérations restent dans les limites d'un uint64_t sans nécessiter l'utilisation de bibliothèques comme GMP.
 - **Exhaustivité des tests** : Les tests réalisés via `test_keys.c` couvrent la génération de clés RSA ainsi que l'affichage lisible des résultats. D'autres tests unitaires peuvent être ajoutés pour vérifier individuellement chaque fonction (primalité, décomposition, exponentiation modulaire, etc.).
@@ -91,7 +90,12 @@ Traite les fichiers 4 octets à la fois en utilisant GMP pour les opérations mo
 ./bin/main b64-2bin message.b64 message2.enc
 ```
 
-#### Phase 3 – CLI & annuaire (bin/interprete)
+### Phase 3 – CLI & annuaire (bin/interprete)
+
+Cette phase fournit un shell interactif (`bin/interprete`) pour gérer vos clés RSA et vos contacts, sans passer par des arguments en ligne de commande à chaque fois.
+
+#### Commandes principales
+
 ```
 newkeys <id> <type>       # créer clé
 listkeys [id] [pub|priv]  # lister
