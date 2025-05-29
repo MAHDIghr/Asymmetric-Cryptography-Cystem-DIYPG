@@ -41,7 +41,7 @@ Chaque phase dispose de son propre sous-dossier dans `src/`, d’un Makefile glo
 ## 4. Installation & Compilation
 Cloner le dépôt puis compiler l’ensemble :
 ```bash
-git clone <url-du-projet>
+git clone https://github.com/MAHDIghr/Asymmetric-Cryptography-Cystem-DIYPG.git
 cd <projet>
 make 
 ```
